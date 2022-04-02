@@ -120,21 +120,21 @@ function draw() {
   }
 
 
-  if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+  // if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
     if (currentPlayer == 0) {
-      line(50+stamp, 50+stamp, 50-stamp, 50-stamp);
-      line(50+stamp, 50-stamp, 50-stamp, 50+stamp);
+      line(20+stamp, 20+stamp, 20-stamp, 20-stamp);
+      line(20+stamp, 20-stamp, 20-stamp, 20+stamp);
     } else {
-      ellipse(50, 50, stamp*2);
+      ellipse(20, 20, stamp*2);
     }
-  }else{
-    if (currentPlayer == 0) {
-      line(mouseX+stamp, mouseY+stamp, mouseX-stamp, mouseY-stamp);
-      line(mouseX+stamp, mouseY-stamp, mouseX-stamp, mouseY+stamp);
-    } else {
-      ellipse(mouseX, mouseY, stamp*2);
-    }
-  }
+  // }else{
+  //   if (currentPlayer == 0) {
+  //     line(mouseX+stamp, mouseY+stamp, mouseX-stamp, mouseY-stamp);
+  //     line(mouseX+stamp, mouseY-stamp, mouseX-stamp, mouseY+stamp);
+  //   } else {
+  //     ellipse(mouseX, mouseY, stamp*2);
+  //   }
+  // }
 
   let result = checkWinner();
 
