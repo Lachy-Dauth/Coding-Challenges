@@ -4,7 +4,9 @@ let board = [
   ["", "", ""]
 ];
 
-players = ["X", "O"];
+let players = ["X", "O"];
+
+let rem = 9;
 
 let currentPlayer;
 let available = [];
@@ -44,7 +46,8 @@ function checkWinner() {
 
   if (winner != null) {
     return winner;
-  } else if (available.length == 0) {
+  } 
+  if (rem == 0) {
     return ["tie"];
   }
 }
@@ -52,6 +55,7 @@ function checkWinner() {
 function nextTurn(i, j) {
   board[i][j] = players[currentPlayer];
   currentPlayer = (currentPlayer + 1) % players.length;
+  rem -=1;
 }
 
 function mousePressed() {
@@ -125,9 +129,11 @@ function draw() {
   let result = checkWinner();
 
   if (result != null) {
-    line((result[1][0]+0.5)*w,(result[1][1]+0.5)*h,(result[2][0]+0.5)*w,(result[2][1]+0.5)*h);
+    if (result[0] != "tie") {
+      line((result[1][0]+0.5)*w,(result[1][1]+0.5)*h,(result[2][0]+0.5)*w,(result[2][1]+0.5)*h);
+    }
     cursor();
-    // console.log(result[0]);
+    console.log(result[0]);
     createP(result[0]);
     noLoop();
   }
