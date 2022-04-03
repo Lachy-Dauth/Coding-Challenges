@@ -22,6 +22,22 @@ function setup() {
   }
 }
 
+function arrEqual(a, b) {
+  if (a.length != b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
+}
+
+function findInList(item, arr) {
+  for (let i = 0; i < arr.length; i++) {
+    if (arrEqual(arr[i], item)) {
+      return i;
+    }
+  }
+}
+
 function equals3(a, b, c) {
   return (a == b && b == c && a != '');
 }
@@ -57,35 +73,45 @@ function nextTurn(i, j) {
   board[i][j] = players[currentPlayer];
   currentPlayer = (currentPlayer + 1) % players.length;
   rem -=1;
+  available.splice(findInList([i,j], available), 1);
 }
 
 function mousePressed() {
-  let i = null;
-  let j = null;
-  if (mouseX > 0 && mouseX < (width/3)) {
-    j = 0;
-  } else if (mouseX > 0 && mouseX < (2*width/3)){
-    j = 1;
-  } else if (mouseX > 0 && mouseX < (width)){
-    j = 2;
-  }
+  if (players[currentPlayer] == human) {
+    console.log(available);
+    let i = null;
+    let j = null;
+    if (mouseX > 0 && mouseX < (width/3)) {
+      j = 0;
+    } else if (mouseX > 0 && mouseX < (2*width/3)){
+      j = 1;
+    } else if (mouseX > 0 && mouseX < (width)){
+      j = 2;
+    }
 
-  if (mouseY > 0 && mouseY < (height/3)) {
-    i = 0;
-  } else if (mouseY > 0 && mouseY < (2*height/3)){
-    i = 1;
-  } else if (mouseY > 0 && mouseY < (height)){
-    i = 2;
-  }
-  if (i != null && j != null) {
-    if ((players.includes(board[i][j]))== false) {
-      nextTurn(i,j);
+    if (mouseY > 0 && mouseY < (height/3)) {
+      i = 0;
+    } else if (mouseY > 0 && mouseY < (2*height/3)){
+      i = 1;
+    } else if (mouseY > 0 && mouseY < (height)){
+      i = 2;
+    }
+    if (i != null && j != null) {
+      if ((players.includes(board[i][j]))== false) {
+        nextTurn(i,j);
+      }
     }
   }
 }
 
 function draw() {
   background(255);
+
+  if (players[currentPlayer] != human) {
+    let randomElement = available[Math.floor(Math.random() * available.length)];
+    nextTurn(...randomElement);
+  }
+
   let edge = 30;
   let stamp = 10;
   let nw = width - edge;
