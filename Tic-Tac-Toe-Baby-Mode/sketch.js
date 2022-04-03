@@ -5,20 +5,21 @@ let board = [
 ];
 
 let players = ["X", "O"];
+let human = "X";
+let ai = "O";
 
 let rem = 9;
 
-let currentPlayer;
-let available = [];
+let currentPlayer = human;
+
+let scores = {
+  X: 10,
+  O: -10,
+  tie: 0
+}
 
 function setup() {
   createCanvas(400, 400);
-  currentPlayer = floor(random(players.length));
-  for (let j = 0; j < board.length; j++) {
-    for (let i = 0; i < board[j].length; i++) {
-      available.push([j, i]);
-    }
-  }
 }
 
 function equals3(a, b, c) {
@@ -27,7 +28,6 @@ function equals3(a, b, c) {
 
 function checkWinner() {
   let winner = null;
-
 
   for (let i = 0; i < 3; i++) {
     if (equals3(board[i][0], board[i][1], board[i][2])) {
@@ -52,39 +52,109 @@ function checkWinner() {
   }
 }
 
+function minimax(board, depth, isMax) {
+  let result = checkWinner();
+  if (result != null) {
+    return scores[result[0]];
+  }
+  if (isMax) {
+    let bestScore = -Infinity;
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (board[i][j] == "") {
+          board[i][j] = ai;
+          rem --;
+          let score = minimax(board, depth + 1, false);
+          rem ++;
+          board[i][j] = "";
+          bestScore = max(score, bestScore)
+        }
+      }
+    }
+    return bestScore;
+  } else {
+    let bestScore = Infinity;
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (board[i][j] == "") {
+          board[i][j] = human;
+          rem --;
+          let score = minimax(board, depth + 1, true);
+          rem ++;
+          board[i][j] = "";
+          bestScore = min(score, bestScore)
+        }
+      }
+    }
+    return bestScore;
+  }
+}
+
+function pickMove() {
+  let bestScore = -Infinity;
+  let bestMove;
+  for (let j = 0; j < board.length; j++) {
+    for (let i = 0; i < board[j].length; i++) {
+      if (board[i][j] == "") {
+        board[i][j] = ai;
+        rem --;
+        let score = minimax(board, 0, false) + random();
+        rem ++;
+        board[i][j] = "";
+        if (score > bestScore) {
+          bestScore = score;
+          bestMove = [i,j];
+        }
+      }
+    }
+  }
+  if (bestMove != null) {
+    board[bestMove[0]][bestMove[1]] = ai;
+    currentPlayer = human;
+    rem -=1;
+  }
+}
+
 function nextTurn(i, j) {
-  board[i][j] = players[currentPlayer];
-  currentPlayer = (currentPlayer + 1) % players.length;
+  board[i][j] = human;
+  currentPlayer = ai;
   rem -=1;
 }
 
 function mousePressed() {
-  let i = null;
-  let j = null;
-  if (mouseX > 0 && mouseX < (width/3)) {
-    j = 0;
-  } else if (mouseX > 0 && mouseX < (2*width/3)){
-    j = 1;
-  } else if (mouseX > 0 && mouseX < (width)){
-    j = 2;
-  }
+  if (currentPlayer == human) {
+    let i = null;
+    let j = null;
+    if (mouseX > 0 && mouseX < (width/3)) {
+      j = 0;
+    } else if (mouseX > 0 && mouseX < (2*width/3)){
+      j = 1;
+    } else if (mouseX > 0 && mouseX < (width)){
+      j = 2;
+    }
 
-  if (mouseY > 0 && mouseY < (height/3)) {
-    i = 0;
-  } else if (mouseY > 0 && mouseY < (2*height/3)){
-    i = 1;
-  } else if (mouseY > 0 && mouseY < (height)){
-    i = 2;
-  }
-  if (i != null && j != null) {
-    if ((players.includes(board[i][j]))== false) {
-      nextTurn(i,j);
+    if (mouseY > 0 && mouseY < (height/3)) {
+      i = 0;
+    } else if (mouseY > 0 && mouseY < (2*height/3)){
+      i = 1;
+    } else if (mouseY > 0 && mouseY < (height)){
+      i = 2;
+    }
+    if (i != null && j != null) {
+      if (board[i][j] == '') {
+        nextTurn(i,j);
+      }
     }
   }
 }
 
 function draw() {
   background(255);
+
+  if (currentPlayer == ai) {
+    pickMove();
+  }
+
   let edge = 30;
   let stamp = 10;
   let nw = width - edge;
@@ -121,14 +191,14 @@ function draw() {
 
 
   if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
-    if (currentPlayer == 0) {
+    if (currentPlayer == human) {
       line(20+stamp, 20+stamp, 20-stamp, 20-stamp);
       line(20+stamp, 20-stamp, 20-stamp, 20+stamp);
     } else {
       ellipse(20, 20, stamp*2);
     }
   }else{
-    if (currentPlayer == 0) {
+    if (currentPlayer == human) {
       line(mouseX+stamp, mouseY+stamp, mouseX-stamp, mouseY-stamp);
       line(mouseX+stamp, mouseY-stamp, mouseX-stamp, mouseY+stamp);
     } else {
