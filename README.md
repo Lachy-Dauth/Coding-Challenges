@@ -1,3 +1,13 @@
-# Coding challenges
+# Coding Challenges
 
-Tic Tac Toe: [here](https://lachy-dauth.github.io/Coding-Challenges/Tic-Tac-Toe/)
+Here I do small mini Projects you can go to the [main site](https://lachy-dauth.github.io/Coding-Challenges/) can see them here:
+
+## Games
+
+# Single Player 
+
+[Tic Tac Toe](https://lachy-dauth.github.io/Coding-Challenges/Tic-Tac-Toe/)
+
+# 2 Player
+
+[2 Player Tic Tac Toe](https://lachy-dauth.github.io/Coding-Challenges/Tic-Tac-Toe-2-player/)
