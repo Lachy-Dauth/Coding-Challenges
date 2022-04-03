@@ -107,7 +107,7 @@ function mousePressed() {
 function draw() {
   background(255);
 
-  if (players[currentPlayer] != human) {
+  if (players[currentPlayer] != human && rem != 0) {
     let randomElement = available[Math.floor(Math.random() * available.length)];
     nextTurn(...randomElement);
   }
