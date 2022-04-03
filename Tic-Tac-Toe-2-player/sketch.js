@@ -5,7 +5,6 @@ let board = [
 ];
 
 let players = ["X", "O"];
-let human = "X";
 
 let rem = 9;
 
