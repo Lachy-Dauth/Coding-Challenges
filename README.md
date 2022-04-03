@@ -4,7 +4,7 @@ Here I do small mini Projects you can go to the [main site](https://lachy-dauth.
 
 ## Games
 
-# Single Player 
+### Single Player 
 
 [Tic Tac Toe](https://lachy-dauth.github.io/Coding-Challenges/Tic-Tac-Toe/)
 <br>
@@ -12,6 +12,6 @@ Here I do small mini Projects you can go to the [main site](https://lachy-dauth.
 <br>
 [Tic Tac Toe Baby Mode](https://lachy-dauth.github.io/Coding-Challenges/Tic-Tac-Toe-Baby-Mode/)
 
-# 2 Player
+### 2 Player
 
 [2 Player Tic Tac Toe](https://lachy-dauth.github.io/Coding-Challenges/Tic-Tac-Toe-2-player/)
