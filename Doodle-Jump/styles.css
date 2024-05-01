@@ -1,0 +1,70 @@
+.grid {
+  width: 400px;
+  height: 600px;
+  background-color: yellow;
+  position: relative;
+  overflow: hidden;
+}
+
+.doodler {
+  width: 40px;
+  height: 85px;
+  background-color: red;
+  position: absolute;
+  top: 0; /* Initial top position */
+  left: 0; /* Initial left position */
+  border: 2px solid black; /* Example border styling */
+  /* Add any additional styles as needed */
+}
+
+.doodler::before {
+  content: ""; /* Required for pseudo-elements */
+  width: 40px;
+  height: 85px;
+  background-color: red;
+  position: absolute;
+  top: 0; /* Initial top position */
+  left: -400px; /* 400px away in the x-direction */
+  border: 2px solid black; /* Example border styling */
+  /* Add any additional styles as needed */
+}
+
+.doodler::after {
+  content: ""; /* Required for pseudo-elements */
+  width: 40px;
+  height: 85px;
+  background-color: red;
+  position: absolute;
+  top: 0; /* Initial top position */
+  left: 400px; /* 400px away in the x-direction */
+  border: 2px solid black; /* Example border styling */
+  /* Add any additional styles as needed */
+}
+
+
+.platform {
+  width: 85px;
+  height: 15px;
+  position: absolute;
+}
+
+.score {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 5rem;
+}
+
+.cloud {
+  background-color: rgb(124, 124, 124);
+}
+
+.normal {
+  background-color: green;
+}
+
+.bad {
+  background-color: rgb(255, 0, 0);
+}
+
+.hidden {
+  display:none;
+}
