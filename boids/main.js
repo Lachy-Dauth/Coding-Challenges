@@ -1,5 +1,6 @@
+let size = 600;
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(size, size);
 }
 
 class Boid {
@@ -7,7 +8,7 @@ class Boid {
     this.x = x;
     this.y = y;
     this.angle = angle;
-    this.speed = 1;
+    this.speed = 2;
     this.xspeed = Math.sin(this.angle) * this.speed;
     this.yspeed = -Math.cos(this.angle) * this.speed;
   }
@@ -33,21 +34,28 @@ class Boid {
     this.yspeed = -Math.cos(this.angle) * this.speed;
     this.x += Math.sin(this.angle) * this.speed;
     this.y -= Math.cos(this.angle) * this.speed;
-    this.x = (this.x+400)%400
-    this.y = (this.y+400)%400
+    this.x = (this.x+size)%size
+    this.y = (this.y+size)%size
   }
 
   update(boids, separation, alignment, cohesion, range) {
     let others = boids.filter(boid => boid !== this && this.dist2boid(boid) < range);
     // others.forEach(boid => this.draw2boid(boid));
-    // console.log(boids.length, others.length);
+
     let sepVector = vecSum(others.map(boid => powVec(this.vec2boid(boid), -0.1)));
     if (!isNaN(sepVector[0]) && !isNaN(sepVector[1])) {
       // this.draw2vec(multVec(sepVector,50));
       this.angle += (sepVector[0] * this.yspeed - sepVector[1] * this.xspeed) * separation;
       this.speed += (sepVector[0] * this.xspeed + sepVector[1] * this.yspeed) * 0.01;
     }
-    this.speed = 0.99 * this.speed + 0.01
+
+    let alignVector = vecAvg(others.map(boid => [boid.xspeed, boid.yspeed]));
+    if (!isNaN(alignVector[0]) && !isNaN(alignVector[1])) {
+      // this.draw2vec(multVec(sepVector,50));
+      this.angle -= (alignVector[0] * this.yspeed - alignVector[1] * this.xspeed) * alignment;
+    }
+
+    this.speed = 0.99 * this.speed + 0.02
   }
 
   draw() {
@@ -132,13 +140,13 @@ function drawIsoscelesTriangle(xpos, ypos, scaleFactor, angle) {
 
 let boids = [];
 for (let i = 1; i < 100; i++){
-  boids.push(new Boid(Math.random()*400, Math.random()*400, Math.random()*2*6.28))
+  boids.push(new Boid(Math.random()*size, Math.random()*size, Math.random()*2*6.28))
 }
 
 function draw(){
   clear();
   boids.forEach(boid => {
-    boid.update(boids, 0.1, 0, 0, 50);
+    boid.update(boids, 0.1, 0.1, 0, 100);
     boid.draw();
     boid.move();
   })
