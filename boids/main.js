@@ -40,9 +40,10 @@ class Boid {
 
   update(boids, separation, alignment, cohesion, range) {
     let others = boids.filter(boid => boid !== this && this.dist2boid(boid) < range);
+    let close = others.filter(boid => this.dist2boid(boid) < range/2)
     // others.forEach(boid => this.draw2boid(boid));
 
-    let sepVector = vecSum(others.map(boid => powVec(this.vec2boid(boid), -0.1)));
+    let sepVector = vecSum(close.map(boid => powVec(this.vec2boid(boid), -0.1)));
     if (!isNaN(sepVector[0]) && !isNaN(sepVector[1])) {
       // this.draw2vec(multVec(sepVector,50));
       this.angle += (sepVector[0] * this.yspeed - sepVector[1] * this.xspeed) * separation;
@@ -53,6 +54,12 @@ class Boid {
     if (!isNaN(alignVector[0]) && !isNaN(alignVector[1])) {
       // this.draw2vec(multVec(sepVector,50));
       this.angle -= (alignVector[0] * this.yspeed - alignVector[1] * this.xspeed) * alignment;
+    }
+
+    let coVector = vecAvg(others.map(boid => [boid.x - this.x, boid.y - this.y]));
+    if (!isNaN(coVector[0]) && !isNaN(coVector[1])) {
+      // this.draw2vec(multVec(sepVector,50));
+      this.angle -= (coVector[0] * this.yspeed - coVector[1] * this.xspeed) / range * cohesion;
     }
 
     this.speed = 0.99 * this.speed + 0.02
@@ -139,14 +146,14 @@ function drawIsoscelesTriangle(xpos, ypos, scaleFactor, angle) {
 }
 
 let boids = [];
-for (let i = 1; i < 100; i++){
+for (let i = 1; i < 50; i++){
   boids.push(new Boid(Math.random()*size, Math.random()*size, Math.random()*2*6.28))
 }
 
 function draw(){
   clear();
   boids.forEach(boid => {
-    boid.update(boids, 0.1, 0.1, 0, 100);
+    boid.update(boids, 0.1, 0.1, 0.1, 100);
     boid.draw();
     boid.move();
   })
