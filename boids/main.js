@@ -2,26 +2,25 @@ function setup() {
   createCanvas(400, 400);
 }
 
-class Biod {
+class Boid {
   constructor(x, y , angle) {
     this.x = x;
     this.y = y;
     this.angle = angle;
-    this.speed = 0.1;
+    this.speed = 1;
   }
 
   move() {
-    this.x += Math.cos(this.angle) * this.speed;
-    this.y += Math.sin(this.angle) * this.speed;
+    this.x += Math.sin(this.angle) * this.speed;
+    this.y -= Math.cos(this.angle) * this.speed;
+    this.x = this.x%400
+    this.y = this.y%400
   }
 
   draw() {
     drawIsoscelesTriangle(this.x, this.y, 1, this.angle);
   }
 }
-
-let biod = new Biod(100, 100, 0);
-
 
 function drawIsoscelesTriangle(xpos, ypos, scaleFactor, angle) {
   // Define the base and height of the triangle before scaling
@@ -63,8 +62,15 @@ function drawIsoscelesTriangle(xpos, ypos, scaleFactor, angle) {
   triangle(rotatedLeftBaseX, rotatedLeftBaseY, rotatedApexX, rotatedApexY, rotatedRightBaseX, rotatedRightBaseY);
 }
 
+let boids = [];
+for (let i = 1; i < 100; i++){
+  boids.push(new Boid(Math.random()*400, Math.random()*400, Math.random()*2*6.28))
+}
+
 function draw(){
   clear();
-  biod.draw();
-  biod.angle += 0.01
+  boids.forEach(boid => {
+    boid.draw();
+    boid.move();
+  })
 }
