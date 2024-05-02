@@ -2,6 +2,10 @@
 
 Here I do small mini Projects you can go to the [main site](https://lachy-dauth.github.io/Coding-Challenges/) can see them here:
 
+## Simulations
+
+[Boids](https://lachy-dauth.github.io/Coding-Challenges/boids/)
+
 ## Games
 
 ### Single Player 
