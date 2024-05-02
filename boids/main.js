@@ -8,18 +8,86 @@ class Boid {
     this.y = y;
     this.angle = angle;
     this.speed = 1;
+    this.xspeed = Math.sin(this.angle) * this.speed;
+    this.yspeed = -Math.cos(this.angle) * this.speed;
+  }
+
+  dist2boid(boid) {
+    return ((boid.x - this.x) ** 2 + (boid.y - this.y) ** 2) ** 0.5;
+  }
+
+  draw2boid(boid) {
+    line(boid.x, boid.y, this.x, this.y);
+  }
+
+  draw2vec(vec) {
+    line(this.x + vec[0], this.y + vec[1], this.x, this.y);
+  }
+
+  vec2boid(boid) {
+    return [boid.x - this.x, boid.y - this.y];
   }
 
   move() {
+    this.xspeed = Math.sin(this.angle) * this.speed;
+    this.yspeed = -Math.cos(this.angle) * this.speed;
     this.x += Math.sin(this.angle) * this.speed;
     this.y -= Math.cos(this.angle) * this.speed;
-    this.x = this.x%400
-    this.y = this.y%400
+    this.x = (this.x+400)%400
+    this.y = (this.y+400)%400
+  }
+
+  update(boids, separation, alignment, cohesion, range) {
+    let others = boids.filter(boid => boid !== this && this.dist2boid(boid) < range);
+    // others.forEach(boid => this.draw2boid(boid));
+    // console.log(boids.length, others.length);
+    let sepVector = vecSum(others.map(boid => powVec(this.vec2boid(boid), -0.1)));
+    if (!isNaN(sepVector[0]) && !isNaN(sepVector[1])) {
+      // this.draw2vec(multVec(sepVector,50));
+      this.angle += (sepVector[0] * this.yspeed - sepVector[1] * this.xspeed) * separation;
+      this.speed += (sepVector[0] * this.xspeed + sepVector[1] * this.yspeed) * 0.01;
+    }
+    this.speed = 0.99 * this.speed + 0.01
   }
 
   draw() {
     drawIsoscelesTriangle(this.x, this.y, 1, this.angle);
   }
+}
+
+function vecAvg(arrays) {
+  let sum1 = 0;
+  let sum2 = 0;
+  arrays.forEach(array => {
+      if (array.length === 2) {
+          sum1 += array[0];
+          sum2 += array[1];
+      }
+  });
+  const avg1 = sum1 / arrays.length;
+  const avg2 = sum2 / arrays.length;
+  return [avg1, avg2];
+}
+
+function vecSum(arrays) {
+  let sum1 = 0;
+  let sum2 = 0;
+  arrays.forEach(array => {
+      if (array.length === 2) {
+          sum1 += array[0];
+          sum2 += array[1];
+      }
+  });
+  return [sum1, sum2];
+}
+
+function multVec(arr, factor) {
+  return arr.map(element => element * factor);
+}
+
+function powVec(arr, power) {
+  let scaleFac = ((arr[0]**2+arr[1]**2) ** 0.5) ** (-1 + power);
+  return arr.map(element => element * scaleFac);
 }
 
 function drawIsoscelesTriangle(xpos, ypos, scaleFactor, angle) {
@@ -70,6 +138,7 @@ for (let i = 1; i < 100; i++){
 function draw(){
   clear();
   boids.forEach(boid => {
+    boid.update(boids, 0.1, 0, 0, 50);
     boid.draw();
     boid.move();
   })
