@@ -1,8 +1,12 @@
-let size = 600;
-let scale = 10;
+let size = 750;
+let scale = 80;
 function setup() {
   createCanvas(size, size);
 }
+
+document.addEventListener('contextmenu', function(event) {
+    event.preventDefault();
+});
 
 class Boid {
   constructor(x, y, angle, orgSpeed) {
@@ -13,6 +17,7 @@ class Boid {
     this.speed = orgSpeed;
     this.xspeed = Math.sin(this.angle) * this.speed;
     this.yspeed = -Math.cos(this.angle) * this.speed;
+    this.buffer = 50
   }
 
   dist2boid(boid) {
@@ -36,43 +41,59 @@ class Boid {
     this.yspeed = -Math.cos(this.angle) * this.speed;
     this.x += Math.sin(this.angle) * this.speed;
     this.y -= Math.cos(this.angle) * this.speed;
-    this.x = (this.x+size)%size
-    this.y = (this.y+size)%size
+    // this.x = (this.x+size)%size
+    // this.y = (this.y+size)%size
   }
 
-  update(boids, separation, alignment, cohesion, mouse, range) {
+  update(boids, separation, alignment, cohesion, mouse, range, sepRange, randomness) {
     let others = boids.filter(boid => boid !== this && this.dist2boid(boid) < range);
-    let close = others.filter(boid => this.dist2boid(boid) < range/2)
+    let close = others.filter(boid => this.dist2boid(boid) < sepRange)
     // others.forEach(boid => this.draw2boid(boid));
 
     let sepVector = vecSum(close.map(boid => powVec(this.vec2boid(boid), -1)));
     if (!isNaN(sepVector[0]) && !isNaN(sepVector[1])) {
       // this.draw2vec(multVec(sepVector,50));
-      this.angle += (sepVector[0] * this.yspeed - sepVector[1] * this.xspeed) * separation / scale;
-      this.speed += (sepVector[0] * this.xspeed + sepVector[1] * this.yspeed) * 0.02 * separation / scale;
+      this.angle += (sepVector[0] * this.yspeed - sepVector[1] * this.xspeed) * 0.01 * separation;
+      this.speed -= (sepVector[0] * this.xspeed + sepVector[1] * this.yspeed) * 0.005 * separation;
     }
 
     let alignVector = vecAvg(others.map(boid => [boid.xspeed, boid.yspeed]));
     if (!isNaN(alignVector[0]) && !isNaN(alignVector[1])) {
       // this.draw2vec(multVec(sepVector,50));
-      this.angle -= (alignVector[0] * this.yspeed - alignVector[1] * this.xspeed) * alignment / scale;
+      this.angle -= (alignVector[0] * this.yspeed - alignVector[1] * this.xspeed) * 0.002 * alignment;
     }
 
     let coVector = vecAvg(others.map(boid => [boid.x - this.x, boid.y - this.y]));
     if (!isNaN(coVector[0]) && !isNaN(coVector[1])) {
       // this.draw2vec(multVec(sepVector,50));
-      this.angle -= (coVector[0] * this.yspeed - coVector[1] * this.xspeed) / range * cohesion / scale;
+      this.angle -= (coVector[0] * this.yspeed - coVector[1] * this.xspeed) * 0.0001 * cohesion;
     }
 
     let mouseVec = powVec([mouseX - this.x, mouseY - this.y], -0.9);
     if (mouseIsPressed === true) {
       if (mouseButton === LEFT) {
-        this.angle -= (mouseVec[0] * this.yspeed - mouseVec[1] * this.xspeed) * mouse / scale;
-        this.speed += (mouseVec[0] * this.xspeed + mouseVec[1] * this.yspeed) * 0.01 * mouse / scale;
+        this.angle -= (mouseVec[0] * this.yspeed - mouseVec[1] * this.xspeed) * mouse / 10;
+        this.speed += (mouseVec[0] * this.xspeed + mouseVec[1] * this.yspeed) * 0.0001 * mouse;
+      }
+      if (mouseButton === RIGHT) {
+        this.angle += (mouseVec[0] * this.yspeed - mouseVec[1] * this.xspeed) * mouse / 10;
+        this.speed -= (mouseVec[0] * this.xspeed + mouseVec[1] * this.yspeed) * 0.0001 * mouse;
       }
     }
 
-    this.speed = 0.99 * this.speed + (0.01 * this.orgSpeed)
+    if (this.x < this.buffer) {
+      this.angle -= this.yspeed * 0.2 * (1 - this.x/this.buffer)**2
+    } else if (this.x > size - this.buffer) {
+      this.angle += this.yspeed * 0.2 * (this.x/this.buffer - size/this.buffer + 1)**2
+    }
+    if (this.y < this.buffer) {
+      this.angle += this.xspeed * 0.2 * (1 - this.y/this.buffer)**2
+    } else if (this.y > size - this.buffer) {
+      this.angle -= this.xspeed * 0.2 * (this.y/this.buffer - size/this.buffer + 1)**2
+    }
+
+    this.angle += (Math.random() - 0.5) * randomness
+    this.speed = 0.97 * this.speed + (0.03 * this.orgSpeed)
   }
 
   draw() {
@@ -156,15 +177,23 @@ function drawIsoscelesTriangle(xpos, ypos, scaleFactor, angle) {
 }
 
 let boids = [];
-for (let i = 1; i < 1000; i++){
-  boids.push(new Boid(Math.random()*size, Math.random()*size, Math.random()*2*6.28, scale/40))
+for (let i = 1; i < 700; i++){
+  boids.push(new Boid(Math.random()*size, Math.random()*size, Math.random()*2*6.28, scale/80))
 }
 
 function draw(){
+  let separation = parseFloat(document.getElementById('separationSlider').value);
+  let alignment = parseFloat(document.getElementById('alignmentSlider').value);
+  let cohesion = parseFloat(document.getElementById('cohesionSlider').value);
+  let randomness = parseFloat(document.getElementById('randomSlider').value);
+  let range = parseFloat(document.getElementById('rangeSlider').value);
+  let sepRange = parseFloat(document.getElementById('sepRangeSlider').value);
+  let mouse = parseFloat(document.getElementById('mouseSlider').value);
+
   clear();
-  for (let i = 1; i < 10; i++){
+  for (let i = 1; i < 4; i++){
     boids.forEach(boid => {
-      boid.update(boids, 15, 15, 2, 30, scale*2);
+      boid.update(boids, separation, alignment, cohesion, mouse, range, sepRange, randomness);
       boid.move();
     })
   }

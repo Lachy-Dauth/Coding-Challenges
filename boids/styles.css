@@ -2,6 +2,17 @@ html {
   background: gray;
 }
 
+body {
+  display: flex;
+  justify-content: space-between;
+}
+
 canvas {
   background: white;
+}
+
+.input-holder {
+  width: 150px;
+  display: flex;
+  flex-direction: column;
 }
