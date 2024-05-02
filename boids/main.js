@@ -1,14 +1,16 @@
 let size = 600;
+let scale = 10;
 function setup() {
   createCanvas(size, size);
 }
 
 class Boid {
-  constructor(x, y , angle) {
+  constructor(x, y, angle, orgSpeed) {
     this.x = x;
     this.y = y;
     this.angle = angle;
-    this.speed = 2;
+    this.orgSpeed = orgSpeed;
+    this.speed = orgSpeed;
     this.xspeed = Math.sin(this.angle) * this.speed;
     this.yspeed = -Math.cos(this.angle) * this.speed;
   }
@@ -38,35 +40,43 @@ class Boid {
     this.y = (this.y+size)%size
   }
 
-  update(boids, separation, alignment, cohesion, range) {
+  update(boids, separation, alignment, cohesion, mouse, range) {
     let others = boids.filter(boid => boid !== this && this.dist2boid(boid) < range);
     let close = others.filter(boid => this.dist2boid(boid) < range/2)
     // others.forEach(boid => this.draw2boid(boid));
 
-    let sepVector = vecSum(close.map(boid => powVec(this.vec2boid(boid), -0.1)));
+    let sepVector = vecSum(close.map(boid => powVec(this.vec2boid(boid), -1)));
     if (!isNaN(sepVector[0]) && !isNaN(sepVector[1])) {
       // this.draw2vec(multVec(sepVector,50));
-      this.angle += (sepVector[0] * this.yspeed - sepVector[1] * this.xspeed) * separation;
-      this.speed += (sepVector[0] * this.xspeed + sepVector[1] * this.yspeed) * 0.01;
+      this.angle += (sepVector[0] * this.yspeed - sepVector[1] * this.xspeed) * separation / scale;
+      this.speed += (sepVector[0] * this.xspeed + sepVector[1] * this.yspeed) * 0.02 * separation / scale;
     }
 
     let alignVector = vecAvg(others.map(boid => [boid.xspeed, boid.yspeed]));
     if (!isNaN(alignVector[0]) && !isNaN(alignVector[1])) {
       // this.draw2vec(multVec(sepVector,50));
-      this.angle -= (alignVector[0] * this.yspeed - alignVector[1] * this.xspeed) * alignment;
+      this.angle -= (alignVector[0] * this.yspeed - alignVector[1] * this.xspeed) * alignment / scale;
     }
 
     let coVector = vecAvg(others.map(boid => [boid.x - this.x, boid.y - this.y]));
     if (!isNaN(coVector[0]) && !isNaN(coVector[1])) {
       // this.draw2vec(multVec(sepVector,50));
-      this.angle -= (coVector[0] * this.yspeed - coVector[1] * this.xspeed) / range * cohesion;
+      this.angle -= (coVector[0] * this.yspeed - coVector[1] * this.xspeed) / range * cohesion / scale;
     }
 
-    this.speed = 0.99 * this.speed + 0.02
+    let mouseVec = powVec([mouseX - this.x, mouseY - this.y], -0.9);
+    if (mouseIsPressed === true) {
+      if (mouseButton === LEFT) {
+        this.angle -= (mouseVec[0] * this.yspeed - mouseVec[1] * this.xspeed) * mouse / scale;
+        this.speed += (mouseVec[0] * this.xspeed + mouseVec[1] * this.yspeed) * 0.01 * mouse / scale;
+      }
+    }
+
+    this.speed = 0.99 * this.speed + (0.01 * this.orgSpeed)
   }
 
   draw() {
-    drawIsoscelesTriangle(this.x, this.y, 1, this.angle);
+    drawIsoscelesTriangle(this.x, this.y, scale, this.angle);
   }
 }
 
@@ -107,8 +117,8 @@ function powVec(arr, power) {
 
 function drawIsoscelesTriangle(xpos, ypos, scaleFactor, angle) {
   // Define the base and height of the triangle before scaling
-  let baseLength = 10; // Base length of the triangle
-  let height = 20; // Height from base to apex
+  let baseLength = 0.1; // Base length of the triangle
+  let height = 0.2; // Height from base to apex
 
   // Apply the scale factor
   baseLength *= scaleFactor;
@@ -146,15 +156,19 @@ function drawIsoscelesTriangle(xpos, ypos, scaleFactor, angle) {
 }
 
 let boids = [];
-for (let i = 1; i < 50; i++){
-  boids.push(new Boid(Math.random()*size, Math.random()*size, Math.random()*2*6.28))
+for (let i = 1; i < 1000; i++){
+  boids.push(new Boid(Math.random()*size, Math.random()*size, Math.random()*2*6.28, scale/40))
 }
 
 function draw(){
   clear();
+  for (let i = 1; i < 10; i++){
+    boids.forEach(boid => {
+      boid.update(boids, 15, 15, 2, 30, scale*2);
+      boid.move();
+    })
+  }
   boids.forEach(boid => {
-    boid.update(boids, 0.1, 0.1, 0.1, 100);
     boid.draw();
-    boid.move();
   })
 }
