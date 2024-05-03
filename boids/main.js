@@ -178,7 +178,7 @@ function drawIsoscelesTriangle(xpos, ypos, scaleFactor, angle) {
 
 let boids = [];
 for (let i = 1; i < 700; i++){
-  boids.push(new Boid(Math.random()*size, Math.random()*size, Math.random()*2*6.28, scale/80))
+  boids.push(new Boid(Math.random()*size, Math.random()*size, Math.random()*2*6.28, 0.60))
 }
 
 function draw(){
@@ -189,6 +189,7 @@ function draw(){
   let range = parseFloat(document.getElementById('rangeSlider').value);
   let sepRange = parseFloat(document.getElementById('sepRangeSlider').value);
   let mouse = parseFloat(document.getElementById('mouseSlider').value);
+  scale = parseFloat(document.getElementById('scaleSlider').value);
 
   clear();
   for (let i = 1; i < 4; i++){
