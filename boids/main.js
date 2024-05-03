@@ -1,4 +1,4 @@
-let size = 750;
+let size = 900;
 let scale = 80;
 function setup() {
   createCanvas(size, size);
