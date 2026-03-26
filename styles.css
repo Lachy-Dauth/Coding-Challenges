@@ -1,0 +1,130 @@
+:root {
+  --bg-top: #f6efe3;
+  --bg-bottom: #d8e8f4;
+  --ink: #1a2633;
+  --muted: #5d6b78;
+  --card: rgba(255, 255, 255, 0.8);
+  --line: rgba(19, 39, 58, 0.14);
+  --accent: #0a7a68;
+  --accent-strong: #075d50;
+  --shadow: 0 10px 30px rgba(22, 42, 61, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 10% 10%, rgba(255, 255, 255, 0.85), transparent 40%),
+    radial-gradient(circle at 85% 25%, rgba(128, 191, 255, 0.25), transparent 45%),
+    linear-gradient(170deg, var(--bg-top), var(--bg-bottom));
+  padding: 2rem 1.25rem 3rem;
+}
+
+nav {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+#nav-header {
+  display: inline-block;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.04em;
+  font-size: 1rem;
+  font-weight: 650;
+  text-transform: uppercase;
+}
+
+.main-sec {
+  max-width: 960px;
+  margin: 1.5rem auto 0;
+  padding: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(6px);
+}
+
+h2 {
+  margin: 0 0 1rem;
+  font-size: clamp(1.7rem, 2.8vw, 2.6rem);
+  line-height: 1.1;
+}
+
+.sub-sec {
+  padding: 1rem 1rem 1.2rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.sub-sec + .sub-sec {
+  margin-top: 1rem;
+}
+
+h3 {
+  margin: 0 0 0.8rem;
+  color: var(--muted);
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.6rem;
+}
+
+li {
+  margin: 0;
+}
+
+a {
+  display: block;
+  border-radius: 10px;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid rgba(10, 122, 104, 0.2);
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 600;
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+a:hover,
+a:focus-visible {
+  color: var(--accent-strong);
+  border-color: rgba(10, 122, 104, 0.45);
+  box-shadow: 0 8px 20px rgba(10, 122, 104, 0.16);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+@media (max-width: 640px) {
+  body {
+    padding: 1rem 0.75rem 2rem;
+  }
+
+  .main-sec {
+    padding: 1rem;
+    border-radius: 14px;
+  }
+
+  #nav-header {
+    font-size: 0.9rem;
+  }
+}
