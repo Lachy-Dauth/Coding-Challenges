@@ -296,3 +296,81 @@ updateLineNumbers();
 
 // Initial render
 renderTape();
+
+// ─── Share ────────────────────────────────────────────────────────────────────
+
+async function compress(str) {
+  const bytes = new TextEncoder().encode(str);
+  const cs = new CompressionStream('deflate-raw');
+  const w = cs.writable.getWriter();
+  w.write(bytes);
+  w.close();
+  const buf = await new Response(cs.readable).arrayBuffer();
+  const arr = new Uint8Array(buf);
+  let bin = '';
+  for (let i = 0; i < arr.length; i++) bin += String.fromCharCode(arr[i]);
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+async function decompress(b64) {
+  const bin = atob(b64.replace(/-/g, '+').replace(/_/g, '/'));
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  const ds = new DecompressionStream('deflate-raw');
+  const w = ds.writable.getWriter();
+  w.write(bytes);
+  w.close();
+  const buf = await new Response(ds.readable).arrayBuffer();
+  return new TextDecoder().decode(buf);
+}
+
+async function doShare() {
+  const prog  = document.getElementById('program').value;
+  const tape  = document.getElementById('tape-input').value;
+  const state = document.getElementById('init-state').value.trim();
+
+  const p = await compress(prog);
+  const params = new URLSearchParams({ p });
+  if (tape)              params.set('t', tape);
+  if (state && state !== '0') params.set('s', state);
+
+  const url = location.href.split('#')[0] + '#' + params.toString();
+
+  try {
+    await navigator.clipboard.writeText(url);
+    const btn = document.getElementById('btn-share');
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
+  } catch {
+    prompt('Copy this URL:', url);
+  }
+}
+
+async function loadFromHash() {
+  const hash = location.hash.slice(1);
+  if (!hash) return;
+  try {
+    const params = new URLSearchParams(hash);
+    const p = params.get('p');
+    if (!p) return;
+
+    const prog = await decompress(p);
+    document.getElementById('program').value = prog;
+    updateLineNumbers();
+
+    const t = params.get('t');
+    if (t !== null) document.getElementById('tape-input').value = t;
+
+    const s = params.get('s');
+    if (s !== null) document.getElementById('init-state').value = s;
+
+    setStatus('Loaded from shared link', 'ok');
+  } catch {
+    setStatus('Could not decode shared link', 'err');
+  }
+}
+
+document.getElementById('btn-share').addEventListener('click', doShare);
+loadFromHash();

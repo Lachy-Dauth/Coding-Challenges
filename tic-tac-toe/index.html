@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic Tac Toe — Lachlan's Coding Challenges</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--ff-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+      margin-bottom: 0.5rem;
+    }
+    .back-link:hover { color: var(--accent); }
+    .back-link svg { width: 11px; height: 11px; }
+
+    .group-intro {
+      padding: clamp(2.5rem, 6vw, 5rem) clamp(1.5rem, 6vw, 5rem) clamp(2rem, 4vw, 3.5rem);
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .group-intro::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; left: 0;
+      width: 120px; height: 1px;
+      background: var(--accent);
+    }
+
+    .group-eyebrow {
+      font-family: var(--ff-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+      opacity: 0;
+      animation: fadeUp 0.5s ease 0.1s forwards;
+    }
+
+    .group-title {
+      font-size: clamp(2.2rem, 5vw, 4.5rem);
+      font-weight: 800;
+      line-height: 0.88;
+      letter-spacing: -0.04em;
+      color: var(--text);
+      opacity: 0;
+      animation: fadeUp 0.6s ease 0.2s forwards;
+    }
+
+    .group-title em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .group-meta {
+      margin-top: clamp(1.25rem, 3vw, 2rem);
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      opacity: 0;
+      animation: fadeUp 0.6s ease 0.35s forwards;
+    }
+
+    .group-meta-item {
+      font-family: var(--ff-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .group-meta-sep {
+      width: 1px;
+      height: 14px;
+      background: var(--dim);
+    }
+
+    /* variant cards */
+    .variants-list {
+      list-style: none;
+    }
+
+    .v-item {
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.25s;
+      position: relative;
+      opacity: 0;
+      animation: fadeUp 0.5s ease forwards;
+    }
+
+    .v-item::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--accent);
+      transform: scaleY(0);
+      transform-origin: bottom;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .v-item.open::before   { transform: scaleY(1); }
+    .v-item.open           { background: var(--accent-subtle); }
+    .v-item:hover:not(.open) { background: rgba(255,255,255,0.015); }
+
+    .v-header {
+      display: grid;
+      grid-template-columns: 3.5rem 1fr auto auto;
+      align-items: center;
+      gap: 1.5rem;
+      padding: clamp(1.25rem, 3vw, 2rem) clamp(1.5rem, 6vw, 5rem);
+      user-select: none;
+    }
+
+    .v-num {
+      font-family: var(--ff-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      color: var(--dim);
+      transition: color 0.25s;
+      padding-top: 0.15em;
+      align-self: start;
+    }
+
+    .v-item.open .v-num { color: var(--accent); }
+
+    .v-title {
+      font-size: clamp(1.4rem, 3.5vw, 2.4rem);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1;
+      color: var(--text);
+      transition: color 0.2s;
+    }
+
+    .v-item.open .v-title { color: var(--accent); }
+
+    .v-tag {
+      font-family: var(--ff-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.75rem;
+      border-radius: 100px;
+      white-space: nowrap;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .v-item.open .v-tag {
+      border-color: var(--border-active);
+      color: rgba(184, 244, 66, 0.65);
+    }
+
+    .v-arrow {
+      color: var(--dim);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s;
+      display: flex;
+      align-items: center;
+    }
+
+    .v-item.open .v-arrow {
+      transform: rotate(45deg);
+      color: var(--accent);
+    }
+
+    .v-body {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .v-body.open { grid-template-rows: 1fr; }
+
+    .v-body-inner { overflow: hidden; }
+
+    .v-body-content {
+      padding: 0 clamp(1.5rem, 6vw, 5rem) clamp(1.75rem, 4vw, 3rem);
+      padding-left: calc(clamp(1.5rem, 6vw, 5rem) + 3.5rem + 1.5rem);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 3rem;
+    }
+
+    .v-desc { max-width: 540px; }
+
+    .v-desc p {
+      font-size: clamp(0.9rem, 1.5vw, 1.05rem);
+      line-height: 1.7;
+      color: rgba(226, 221, 212, 0.6);
+      margin-bottom: 1.25rem;
+    }
+
+    .v-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .v-chip {
+      font-family: var(--ff-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      padding: 0.22rem 0.55rem;
+      border-radius: 3px;
+    }
+
+    .v-item:nth-child(1) { animation-delay: 0.40s; }
+    .v-item:nth-child(2) { animation-delay: 0.48s; }
+    .v-item:nth-child(3) { animation-delay: 0.56s; }
+    .v-item:nth-child(4) { animation-delay: 0.64s; }
+
+    @media (max-width: 680px) {
+      .v-header {
+        grid-template-columns: 2.2rem 1fr auto;
+        gap: 1rem;
+      }
+      .v-tag { display: none; }
+      .v-body-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+        padding-left: clamp(1.5rem, 6vw, 5rem);
+      }
+      .c-launch { width: 100%; justify-content: center; }
+      .group-meta { flex-wrap: wrap; gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="group-intro">
+    <a href="../index.html" class="back-link">
+      <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 7H2M7 2L2 7l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      All projects
+    </a>
+    <p class="group-eyebrow">Game · AI · 2P</p>
+    <h1 class="group-title">TIC TAC<br><em>TOE</em></h1>
+    <div class="group-meta">
+      <span class="group-meta-item">4 variants</span>
+      <span class="group-meta-sep"></span>
+      <span class="group-meta-item">Classic · Easy · Baby · 2 Player</span>
+      <span class="group-meta-sep"></span>
+      <span class="group-meta-item">Select to explore</span>
+    </div>
+  </div>
+
+  <ul class="variants-list" id="list"></ul>
+
+  <footer class="site-footer">
+    <span class="footer-label">Lachlan Dauth</span>
+    <span class="footer-label" id="year-label"></span>
+  </footer>
+
+  <script>
+    const VARIANTS = [
+      {
+        title:  "Classic",
+        tag:    "Game · AI",
+        desc:   "Classic 3×3 grid against a minimax AI that plays a perfect game. Every move is calculated — it never blunders, never misses a win. Find the draw, or don't.",
+        chips:  ["minimax", "adversarial search", "game theory", "zero-sum"],
+        href:   "./classic/index.html",
+      },
+      {
+        title:  "Easy Mode",
+        tag:    "Game · AI",
+        desc:   "An imperfect AI that looks only one move ahead. No lookahead, no threat detection — just shallow greedy play. Real opponents don't play perfectly either.",
+        chips:  ["greedy search", "one-ply", "bounded rationality"],
+        href:   "./easy-mode/index.html",
+      },
+      {
+        title:  "Baby Mode",
+        tag:    "Game · AI",
+        desc:   "The AI deliberately plays suboptimal moves. It sees the board but second-guesses itself. Every open winning line is yours to take — if you look.",
+        chips:  ["handicapped AI", "heuristic", "difficulty scaling"],
+        href:   "./baby-mode/index.html",
+      },
+      {
+        title:  "2 Player",
+        tag:    "Game · 2P",
+        desc:   "Pass and play for two humans on the same device. No AI, no hints, no mercy. Settle it the old-fashioned way.",
+        chips:  ["local multiplayer", "turn-based", "classic"],
+        href:   "./2-player/index.html",
+      },
+    ];
+
+    const ARROW = `<svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+
+    const PLUS = `<svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>`;
+
+    const list = document.getElementById('list');
+
+    VARIANTS.forEach((item, i) => {
+      const li = document.createElement('li');
+      li.className = 'v-item';
+      li.setAttribute('role', 'button');
+      li.setAttribute('aria-expanded', 'false');
+      li.setAttribute('tabindex', '0');
+
+      const num = String(i + 1).padStart(2, '0');
+
+      li.innerHTML = `
+        <div class="v-header">
+          <span class="v-num">${num}</span>
+          <span class="v-title">${item.title}</span>
+          <span class="v-tag">${item.tag}</span>
+          <span class="v-arrow">${PLUS}</span>
+        </div>
+        <div class="v-body" role="region">
+          <div class="v-body-inner">
+            <div class="v-body-content">
+              <div class="v-desc">
+                <p>${item.desc}</p>
+                <div class="v-chips">
+                  ${item.chips.map(c => `<span class="v-chip">${c}</span>`).join('')}
+                </div>
+              </div>
+              <a class="c-launch" href="${item.href}">
+                Launch ${ARROW}
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const header = li.querySelector('.v-header');
+      const body   = li.querySelector('.v-body');
+
+      function toggle() {
+        const isOpen = li.classList.contains('open');
+        document.querySelectorAll('.v-item.open').forEach(el => {
+          el.classList.remove('open');
+          el.querySelector('.v-body').classList.remove('open');
+          el.setAttribute('aria-expanded', 'false');
+        });
+        if (!isOpen) {
+          li.classList.add('open');
+          body.classList.add('open');
+          li.setAttribute('aria-expanded', 'true');
+        }
+      }
+
+      header.addEventListener('click', toggle);
+      li.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+      });
+
+      li.querySelector('.c-launch').addEventListener('click', e => e.stopPropagation());
+
+      list.appendChild(li);
+    });
+
+    document.getElementById('year-label').textContent = new Date().getFullYear();
+  </script>
+
+</body>
+</html>

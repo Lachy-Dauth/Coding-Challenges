@@ -249,6 +249,8 @@ button.active { background: #111; color: #fff; }
 
 #speed { width: 70px; accent-color: #111; }
 
+#btn-share.copied { background: #111; color: #6d6; }
+
 /* ── History ── */
 #history-panel {
   flex: 1;
