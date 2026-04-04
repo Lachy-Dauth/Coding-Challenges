@@ -1,15 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-8HRZCCY4V1"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-8HRZCCY4V1');
-</script>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,27 +8,129 @@
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-  <nav>
-    <header id="nav-header">Lachlans Coding Challenges</header>
-  </nav>
-  <section class="main-sec" id="games">
-    <h2>Games</h2>
-    <section class="sub-sec" id="oneplayer">
-      <h3>One Player</h3>
-      <ul>
-        <li><a href="./Tic-Tac-Toe/index.html">Tic Tac Toe</a></li>
-        <li><a href="./Tic-Tac-Toe-Baby-Mode/index.html">Tic Tac Toe Baby Mode</a></li>
-        <li><a href="./Tic-Tac-Toe-Easy-Mode/index.html">Tic Tac Toe Easy Mode</a></li>
-        <li><a href="./boids/index.html">Boids</a></li>
 
-      </ul>
-    </section>
-    <section class="sub-sec" id="twoplayer">
-      <h3>Two Player</h3>
-      <ul>
-        <li><a href="./Tic-Tac-Toe-2-player/index.html">Tic Tac Toe 2 Player</a></li>
-      </ul>
-    </section>
-  </section>
+  <header class="site-header">
+    <p class="header-eyebrow">Lachlan Dauth &mdash; Projects</p>
+    <h1 class="header-title">CODING<br><em>CHALLENGES</em></h1>
+    <div class="header-meta">
+      <span class="header-meta-item">3 projects</span>
+      <span class="header-meta-sep"></span>
+      <span class="header-meta-item">Games &middot; Simulations &middot; Theory</span>
+      <span class="header-meta-sep"></span>
+      <span class="header-meta-item">Select to explore</span>
+    </div>
+  </header>
+
+  <ul class="challenges-list" id="list"></ul>
+
+  <footer class="site-footer">
+    <span class="footer-label">Lachlan Dauth</span>
+    <span class="footer-label" id="year-label"></span>
+  </footer>
+
+  <script>
+    const ITEMS = [
+      {
+        title:  "Tic Tac Toe",
+        tag:    "Game · AI · 2P",
+        desc:   "Four variants on the classic 3×3 grid — a perfect minimax AI, an easy one-ply opponent, a handicapped baby-mode, and a local two-player mode. Pick your difficulty.",
+        chips:  ["minimax", "adversarial search", "difficulty scaling", "local multiplayer"],
+        href:   "./tic-tac-toe/index.html",
+      },
+      {
+        title:  "Boids",
+        tag:    "Simulation",
+        desc:   "Craig Reynolds' classic emergent flocking algorithm from 1987. Three local forces — separation, alignment, cohesion — produce complex collective motion from zero central coordination.",
+        chips:  ["emergent behaviour", "swarm intelligence", "Reynolds 1987", "canvas"],
+        href:   "./boids/index.html",
+      },
+      {
+        title:  "Turing Machine Simulator",
+        tag:    "Theory",
+        desc:   "Write transition rules in a plain-text format, load a tape, and step through the universal model of computation one rule at a time. Includes breakpoints and a pattern-based automated test suite.",
+        chips:  ["computability theory", "transition rules", "tape automata", "test suite"],
+        href:   "./turing-simulation/index.html",
+      },
+    ];
+
+    const ARROW = `<svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+
+    const PLUS = `<svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>`;
+
+    const list = document.getElementById('list');
+
+    ITEMS.forEach((item, i) => {
+      const li = document.createElement('li');
+      li.className = 'c-item';
+      li.setAttribute('role', 'button');
+      li.setAttribute('aria-expanded', 'false');
+      li.setAttribute('tabindex', '0');
+
+      const num = String(i + 1).padStart(2, '0');
+
+      li.innerHTML = `
+        <div class="c-header">
+          <span class="c-num">${num}</span>
+          <span class="c-title">${item.title}</span>
+          <span class="c-tag">${item.tag}</span>
+          <span class="c-arrow">${PLUS}</span>
+        </div>
+        <div class="c-body" role="region">
+          <div class="c-body-inner">
+            <div class="c-body-content">
+              <div class="c-desc">
+                <p>${item.desc}</p>
+                <div class="c-chips">
+                  ${item.chips.map(c => `<span class="c-chip">${c}</span>`).join('')}
+                </div>
+              </div>
+              <a class="c-launch" href="${item.href}">
+                Launch ${ARROW}
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // toggle
+      const header = li.querySelector('.c-header');
+      const body   = li.querySelector('.c-body');
+
+      function toggle() {
+        const isOpen = li.classList.contains('open');
+
+        // close all others
+        document.querySelectorAll('.c-item.open').forEach(el => {
+          el.classList.remove('open');
+          el.querySelector('.c-body').classList.remove('open');
+          el.setAttribute('aria-expanded', 'false');
+        });
+
+        if (!isOpen) {
+          li.classList.add('open');
+          body.classList.add('open');
+          li.setAttribute('aria-expanded', 'true');
+        }
+      }
+
+      header.addEventListener('click', toggle);
+      li.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+      });
+
+      // stop launch link from toggling closed
+      li.querySelector('.c-launch').addEventListener('click', e => e.stopPropagation());
+
+      list.appendChild(li);
+    });
+
+    // year
+    document.getElementById('year-label').textContent = new Date().getFullYear();
+  </script>
+
 </body>
 </html>

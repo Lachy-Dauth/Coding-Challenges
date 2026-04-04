@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Turing Machine Simulator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>Turing Machine Simulator</header>
+
+<div id="tape-panel">
+  <div class="panel-header">Tape</div>
+  <div id="tape-scroll">
+    <div id="tape-inner"></div>
+  </div>
+</div>
+
+<main>
+
+  <!-- LEFT: program editor fills all available height -->
+  <div id="program-panel">
+    <div class="panel-header">Program — state symbol new-symbol direction new-state</div>
+    <div id="editor">
+      <div id="line-numbers"></div>
+      <textarea id="program" spellcheck="false" placeholder="; Increment binary number
+; Format: state symbol new-symbol direction new-state
+
+0 _ _ r halt   ; empty tape
+0 * * r 0      ; scan right
+0 _ _ l 1      ; found end
+
+1 1 0 l 1      ; flip 1->0, carry
+1 0 1 * halt   ; flip 0->1, done
+1 _ 1 * halt   ; leading bit
+"></textarea>
+    </div>
+  </div>
+
+  <!-- RIGHT: inputs + status + controls stacked -->
+  <div id="right-panel">
+
+    <div id="config-panel">
+      <div class="panel-header">Config</div>
+
+      <div id="input-area">
+        <div class="input-row">
+          <label>Tape</label>
+          <input type="text" id="tape-input" value="1011" placeholder="initial tape (* = head position)">
+        </div>
+        <div class="input-row">
+          <label>Init State</label>
+          <input type="text" id="init-state" value="0" placeholder="starting state">
+        </div>
+      </div>
+    </div>
+
+    <div id="status-bar">
+      <div class="status-item">State: <span id="st-state">—</span></div>
+      <div class="status-item">Head: <span id="st-head">—</span></div>
+      <div class="status-item">Steps: <span id="st-steps">0</span></div>
+      <div id="status-msg">Load to begin</div>
+    </div>
+
+    <div id="controls-panel">
+      <button id="btn-load">Load</button>
+      <button id="btn-step" disabled>Step</button>
+      <button id="btn-run" disabled>Run</button>
+      <button id="btn-reset" disabled>Reset</button>
+      <button id="btn-tests">Tests</button>
+      <button id="btn-share">Share</button>
+      <div id="speed-wrap">
+        Speed
+        <input type="range" id="speed" min="1" max="6" value="3">
+        <span id="speed-label">medium</span>
+      </div>
+    </div>
+
+    <div id="test-panel" class="hidden">
+      <div class="panel-header">Test Suite</div>
+      <div id="test-config">
+        <div class="input-row">
+          <label>Pattern</label>
+          <input type="text" id="test-pattern" value="a^n b^m" placeholder="e.g. a^n b^m, (ab)^n b^2m">
+        </div>
+        <div id="pattern-error"></div>
+        <div class="input-row">
+          <label>Max</label>
+          <input type="number" id="test-max" value="6" min="0" max="50">
+        </div>
+        <div class="input-row">
+          <label>Accept state</label>
+          <input type="text" id="test-accept" value="halt-accept" placeholder="accept state prefix">
+        </div>
+        <div class="input-row">
+          <label>Step limit</label>
+          <input type="number" id="test-steps" value="10000" min="10">
+        </div>
+      </div>
+      <div id="test-run-row">
+        <button id="btn-run-tests">Run Tests</button>
+        <span id="test-summary"></span>
+      </div>
+      <div id="test-results"></div>
+    </div>
+
+    <div id="history-panel">
+      <table id="history-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>State</th>
+            <th>Read</th>
+            <th>Write</th>
+            <th>Dir</th>
+            <th>New State</th>
+            <th>Head</th>
+          </tr>
+        </thead>
+        <tbody id="history-body"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+</main>
+
+<script src="machine.js"></script>
+<script src="test.js"></script>
+<script src="ui.js"></script>
+</body>
+</html>
