@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "turing-sim",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8090", "--directory", "/Users/lachy/Desktop/unsw/Claude-Experiments/Coding-Challenges/turing-simulation"],
+      "port": 8090
+    }
+  ]
+}
