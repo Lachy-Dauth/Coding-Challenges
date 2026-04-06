@@ -8,7 +8,10 @@
 </head>
 <body>
 
-<header>Turing Machine Simulator</header>
+<header>
+  <span>Turing Machine Simulator</span>
+  <a href="2d/" class="nav-link">2D Mode</a>
+</header>
 
 <div id="tape-panel">
   <div class="panel-header">Tape</div>
@@ -38,6 +41,8 @@
     </div>
   </div>
 
+  <div id="resize-handle"></div>
+
   <!-- RIGHT: inputs + status + controls stacked -->
   <div id="right-panel">
 
@@ -47,12 +52,23 @@
       <div id="input-area">
         <div class="input-row">
           <label>Tape</label>
-          <input type="text" id="tape-input" value="1011" placeholder="initial tape (* = head position)">
+          <input type="text" id="tape-input" value="1011" placeholder="tape (space-delimited for multi-char symbols)">
         </div>
         <div class="input-row">
           <label>Init State</label>
           <input type="text" id="init-state" value="0" placeholder="starting state">
         </div>
+        <div class="input-row">
+          <label>2D View</label>
+          <input type="checkbox" id="show-2d">
+        </div>
+      </div>
+    </div>
+
+    <div id="grid-2d-panel" class="hidden">
+      <div class="panel-header">2D View</div>
+      <div id="grid-2d-scroll">
+        <div id="grid-2d"></div>
       </div>
     </div>
 
@@ -67,6 +83,8 @@
       <button id="btn-load">Load</button>
       <button id="btn-step" disabled>Step</button>
       <button id="btn-run" disabled>Run</button>
+      <button id="btn-boost" disabled>Boost</button>
+      <input type="number" id="boost-batch" value="100" min="1" max="100000" title="Steps per frame">
       <button id="btn-reset" disabled>Reset</button>
       <button id="btn-tests">Tests</button>
       <button id="btn-share">Share</button>

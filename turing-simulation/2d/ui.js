@@ -1,26 +1,24 @@
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const TAPE_WINDOW  = 40;
+const TAPE_COLS    = 21;
+const TAPE_ROWS    = 9;
 const SPEEDS       = [2000, 800, 300, 100, 30, 5];
 const SPEED_LABELS = ['very slow', 'slow', 'medium', 'fast', 'very fast', 'max'];
 
 // ─── State ────────────────────────────────────────────────────────────────────
 
-const machine    = new TuringMachine();
+const machine    = new TuringMachine2D();
 let running      = false;
-let boosting     = false;
-let boostRAF     = null;
 let runTimer     = null;
 let savedTapeStr = '';
 let savedInitSt  = '';
-
-const boostBatchInput = document.getElementById('boost-batch');
 
 // ─── DOM refs ─────────────────────────────────────────────────────────────────
 
 const tapeInner    = document.getElementById('tape-inner');
 const stState      = document.getElementById('st-state');
-const stHead       = document.getElementById('st-head');
+const stRow        = document.getElementById('st-row');
+const stCol        = document.getElementById('st-col');
 const stSteps      = document.getElementById('st-steps');
 const statusMsg    = document.getElementById('status-msg');
 const historyBody  = document.getElementById('history-body');
@@ -29,7 +27,6 @@ const speedInput   = document.getElementById('speed');
 const speedLabel   = document.getElementById('speed-label');
 const btnStep      = document.getElementById('btn-step');
 const btnRun       = document.getElementById('btn-run');
-const btnBoost     = document.getElementById('btn-boost');
 const btnReset     = document.getElementById('btn-reset');
 const lineNumbers  = document.getElementById('line-numbers');
 const programEl_   = document.getElementById('program');
@@ -37,17 +34,46 @@ const programEl_   = document.getElementById('program');
 // ─── Rendering ────────────────────────────────────────────────────────────────
 
 function renderTape() {
-  const head = machine.head;
-  const lo = Math.max(0, head - Math.floor(TAPE_WINDOW / 2));
-  const hi = lo + TAPE_WINDOW;
+  const headRow = machine.row;
+  const headCol = machine.col;
+
+  const halfCols = Math.floor(TAPE_COLS / 2);
+  const halfRows = Math.floor(TAPE_ROWS / 2);
+
+  const colLo = Math.max(0, headCol - halfCols);
+  const colHi = colLo + TAPE_COLS - 1;
+  const rowLo = Math.max(0, headRow - halfRows);
+  const rowHi = rowLo + TAPE_ROWS - 1;
 
   tapeInner.innerHTML = '';
-  for (let i = lo; i <= hi; i++) {
-    const cell = document.createElement('div');
-    cell.className = 'tape-cell' + (i === head ? ' head' : '');
-    const ch = machine.get(i);
-    cell.textContent = ch === ' ' ? '_' : ch;
-    tapeInner.appendChild(cell);
+  tapeInner.style.gridTemplateColumns = `auto repeat(${TAPE_COLS}, 28px)`;
+
+  // Column header row
+  const corner = document.createElement('div');
+  corner.className = 'tape-label';
+  tapeInner.appendChild(corner);
+
+  for (let c = colLo; c <= colHi; c++) {
+    const lbl = document.createElement('div');
+    lbl.className = 'tape-label col-label';
+    lbl.textContent = c;
+    tapeInner.appendChild(lbl);
+  }
+
+  // Data rows (highest row at top of display)
+  for (let r = rowHi; r >= rowLo; r--) {
+    const lbl = document.createElement('div');
+    lbl.className = 'tape-label row-label';
+    lbl.textContent = r;
+    tapeInner.appendChild(lbl);
+
+    for (let c = colLo; c <= colHi; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'tape-cell' + (r === headRow && c === headCol ? ' head' : '');
+      const ch = machine.get(r, c);
+      cell.textContent = ch === ' ' ? '_' : ch;
+      tapeInner.appendChild(cell);
+    }
   }
 }
 
@@ -58,18 +84,16 @@ function setStatus(msg, type) {
 
 function updateStatusBar() {
   stState.textContent = machine.state || '—';
-  stHead.textContent  = machine.head;
+  stRow.textContent   = machine.row;
+  stCol.textContent   = machine.col;
   stSteps.textContent = machine.steps;
 }
 
 function updateButtons() {
-  btnStep.disabled  = machine.halted || running;
-  btnRun.disabled   = machine.halted;
-  btnBoost.disabled = machine.halted;
-  btnRun.textContent   = running && !boosting ? 'Pause' : 'Run';
-  btnBoost.textContent = boosting ? 'Pause' : 'Boost';
-  btnRun.classList.toggle('active', running && !boosting);
-  btnBoost.classList.toggle('active', boosting);
+  btnStep.disabled = machine.halted || running;
+  btnRun.disabled  = machine.halted;
+  btnRun.textContent = running ? 'Pause' : 'Run';
+  btnRun.classList.toggle('active', running);
 }
 
 function addHistoryRow(entry) {
@@ -85,7 +109,7 @@ function addHistoryRow(entry) {
     `<td>${entry.write}</td>` +
     `<td>${entry.dir}</td>` +
     `<td>${entry.newState}</td>` +
-    `<td>${entry.head}</td>`;
+    `<td>${entry.row},${entry.col}</td>`;
   historyBody.appendChild(tr);
   historyPanel.scrollTop = historyPanel.scrollHeight;
 }
@@ -126,7 +150,7 @@ function handleResult(result) {
   if (last) addHistoryRow(last);
 
   if (result === 'no-rule') {
-    const sym = machine.get(machine.head);
+    const sym = machine.get(machine.row, machine.col);
     setStatus(`No rule for state="${machine.state}" symbol="${sym === ' ' ? '_' : sym}"`, 'err');
     stopRun();
   } else if (result === 'halted') {
@@ -172,60 +196,9 @@ function scheduleStep() {
 }
 
 function stopRun() {
-  running  = false;
-  boosting = false;
-  machine.recording = true;
+  running = false;
   clearTimeout(runTimer);
-  if (boostRAF) { cancelAnimationFrame(boostRAF); boostRAF = null; }
   updateButtons();
-}
-
-function doBoost() {
-  if (boosting) {
-    stopRun();
-    setStatus(`Paused at step ${machine.steps}`, '');
-    updateUI();
-    return;
-  }
-  if (running) stopRun();
-  if (machine.halted) return;
-
-  running  = true;
-  boosting = true;
-  machine.recording = false;
-  updateButtons();
-  setStatus('Boosting…', 'ok');
-  boostFrame();
-}
-
-function boostFrame() {
-  if (!boosting) return;
-
-  const batch = parseInt(boostBatchInput.value) || 100;
-  for (let i = 0; i < batch; i++) {
-    const result = machine.step();
-    if (result !== 'ok') {
-      const last = machine.lastEntry;
-      if (last) addHistoryRow(last);
-
-      if (result === 'halted') {
-        setStatus(`Halted in state "${machine.state}" after ${machine.steps} steps`, 'halted');
-      } else if (result === 'no-rule') {
-        const sym = machine.get(machine.head);
-        setStatus(`No rule for state="${machine.state}" symbol="${sym === ' ' ? '_' : sym}"`, 'err');
-      } else if (result === 'breakpoint') {
-        setStatus(`Breakpoint hit (line ${last.rule.lineNum})`, 'brk');
-      }
-      stopRun();
-      updateUI();
-      return;
-    }
-  }
-
-  renderTape();
-  updateStatusBar();
-  setStatus(`Boosting… step ${machine.steps}`, 'ok');
-  boostRAF = requestAnimationFrame(boostFrame);
 }
 
 function doReset() {
@@ -236,94 +209,11 @@ function doReset() {
   updateUI();
 }
 
-// ─── Test Suite UI ────────────────────────────────────────────────────────────
-
-const testPanel   = document.getElementById('test-panel');
-const testSummary = document.getElementById('test-summary');
-const testResults = document.getElementById('test-results');
-
-document.getElementById('btn-tests').addEventListener('click', () => {
-  testPanel.classList.toggle('hidden');
-});
-
-document.getElementById('btn-run-tests').addEventListener('click', () => {
-  const { rules } = parseProgram(document.getElementById('program').value);
-  if (!rules.length) {
-    testSummary.textContent = 'No rules loaded.';
-    testSummary.className = 'fail';
-    return;
-  }
-
-  const patternStr  = document.getElementById('test-pattern').value.trim();
-  const patternErr  = document.getElementById('pattern-error');
-
-  try {
-    parsePattern(patternStr);
-    patternErr.textContent = '';
-  } catch (e) {
-    patternErr.textContent = e.message;
-    return;
-  }
-
-  const initState   = document.getElementById('init-state').value.trim() || '0';
-  const max         = parseInt(document.getElementById('test-max').value)   || 6;
-  const acceptPfx   = document.getElementById('test-accept').value.trim()  || 'halt-accept';
-  const stepLimit   = parseInt(document.getElementById('test-steps').value) || 10000;
-
-  const results = runTestSuite(rules, initState, patternStr, max, acceptPfx, stepLimit);
-
-  const passed = results.filter(r => r.pass).length;
-  const failed = results.length - passed;
-  const posPass = results.filter(r => r.expected && r.pass).length;
-  const posTot  = results.filter(r => r.expected).length;
-  const negPass = results.filter(r => !r.expected && r.pass).length;
-  const negTot  = results.filter(r => !r.expected).length;
-
-  testSummary.textContent =
-    `${passed}/${results.length} passed  (pos ${posPass}/${posTot}  neg ${negPass}/${negTot})`;
-  testSummary.className = failed === 0 ? 'pass' : 'fail';
-
-  // Render table — failures first, then passes
-  const sorted = [...results].sort((a, b) => a.pass - b.pass);
-  testResults.innerHTML = '';
-  const table = document.createElement('table');
-  table.innerHTML =
-    '<thead><tr><th>tape</th><th>exp</th><th>got</th><th>steps</th><th>reason</th></tr></thead>';
-  const tbody = document.createElement('tbody');
-
-  for (const r of sorted) {
-    const tr = document.createElement('tr');
-    tr.className = r.pass ? 't-pass' : 't-fail';
-    const tapeDisplay = r.tape === '' ? '\u03b5' : r.tape.length > 16 ? r.tape.slice(0, 14) + '\u2026' : r.tape;
-    tr.innerHTML =
-      `<td>${tapeDisplay}</td>` +
-      `<td>${r.expected ? 'acc' : 'rej'}</td>` +
-      `<td>${r.accepted ? 'acc' : 'rej'}</td>` +
-      `<td>${r.steps}</td>` +
-      `<td>${r.reason}</td>`;
-    tbody.appendChild(tr);
-  }
-
-  table.appendChild(tbody);
-  testResults.appendChild(table);
-});
-
-document.getElementById('test-pattern').addEventListener('input', (e) => {
-  const patternErr = document.getElementById('pattern-error');
-  try {
-    parsePattern(e.target.value.trim());
-    patternErr.textContent = '';
-  } catch (err) {
-    patternErr.textContent = err.message;
-  }
-});
-
 // ─── Event wiring ─────────────────────────────────────────────────────────────
 
 document.getElementById('btn-load').addEventListener('click', load);
 btnStep.addEventListener('click', doStep);
 btnRun.addEventListener('click', doRun);
-btnBoost.addEventListener('click', doBoost);
 btnReset.addEventListener('click', doReset);
 
 speedInput.addEventListener('input', () => {
@@ -334,7 +224,6 @@ speedInput.addEventListener('input', () => {
 document.addEventListener('keydown', e => {
   if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
   if (e.key === ' ')                            { e.preventDefault(); doRun(); }
-  if (e.key === 'b')                            { e.preventDefault(); doBoost(); }
   if (e.key === 'n' || e.key === 'ArrowRight')  doStep();
 });
 
@@ -434,115 +323,28 @@ async function loadFromHash() {
 document.getElementById('btn-share').addEventListener('click', doShare);
 loadFromHash();
 
-// ─── 2D Grid View ───────────────────────────────────────────────────────────
+// ─── Demo ─────────────────────────────────────────────────────────────────────
 
-const show2dCheckbox = document.getElementById('show-2d');
-const grid2dPanel    = document.getElementById('grid-2d-panel');
-const grid2dEl       = document.getElementById('grid-2d');
+const DEMO_PROGRAM = `; Copy row 0 input up to row 1
+; Reads each cell, marks it, writes the copy one row up
 
-show2dCheckbox.addEventListener('change', () => {
-  grid2dPanel.classList.toggle('hidden', !show2dCheckbox.checked);
-  if (show2dCheckbox.checked) render2DGrid();
+copy 0 X u w0
+copy 1 Y u w1
+copy _ _ * halt
+
+w0 _ 0 d next
+w1 _ 1 d next
+
+next * * r copy
+`;
+
+document.getElementById('btn-demo').addEventListener('click', () => {
+  programEl_.value = DEMO_PROGRAM;
+  document.getElementById('tape-input').value = '1011';
+  document.getElementById('init-state').value = 'copy';
+  updateLineNumbers();
+  load();
 });
-
-function parse1DTo2D() {
-  const tape = machine.tape;
-  // Find $ boundaries
-  let first = -1, last = -1;
-  for (let i = 0; i < tape.length; i++) {
-    const ch = tape[i] === ' ' ? '_' : tape[i];
-    if (ch === '$') {
-      if (first === -1) first = i;
-      last = i;
-    }
-  }
-  if (first === -1 || first === last) return null;
-
-  // Collect symbols between $ markers, split by # into blocks (rows)
-  const blocks = [[]];
-  for (let i = first + 1; i < last; i++) {
-    let ch = tape[i] === ' ' ? '_' : tape[i];
-    if (ch === '#' || ch === "#'") {
-      blocks.push([]);
-    } else {
-      blocks[blocks.length - 1].push(ch);
-    }
-  }
-
-  // Parse each cell: strip ' marks, detect ^ (head) and ~ (tilde)
-  const grid = [];
-  let headRow = -1, headCol = -1;
-  for (let r = 0; r < blocks.length; r++) {
-    const row = [];
-    for (let c = 0; c < blocks[r].length; c++) {
-      let sym = blocks[r][c].replace(/'/g, '');
-      let isHead = false;
-      if (sym.endsWith('^')) {
-        sym = sym.slice(0, -1);
-        isHead = true;
-        headRow = r;
-        headCol = c;
-      } else if (sym.endsWith('~')) {
-        sym = sym.slice(0, -1);
-      }
-      row.push({ symbol: sym, isHead });
-    }
-    grid.push(row);
-  }
-
-  return { grid, headRow, headCol };
-}
-
-function render2DGrid() {
-  if (!show2dCheckbox.checked) return;
-  const parsed = parse1DTo2D();
-  if (!parsed) {
-    grid2dEl.innerHTML = '<span style="padding:8px;font-size:11px;color:#999">No 2D encoding detected</span>';
-    return;
-  }
-
-  const { grid } = parsed;
-  const numRows = grid.length;
-  const numCols = Math.max(...grid.map(r => r.length), 0);
-  if (numCols === 0) return;
-
-  grid2dEl.innerHTML = '';
-  grid2dEl.style.gridTemplateColumns = `auto repeat(${numCols}, 26px)`;
-
-  // Column header row
-  const corner = document.createElement('div');
-  corner.className = 'g2d-label';
-  grid2dEl.appendChild(corner);
-  for (let c = 0; c < numCols; c++) {
-    const lbl = document.createElement('div');
-    lbl.className = 'g2d-label g2d-col-label';
-    lbl.textContent = c;
-    grid2dEl.appendChild(lbl);
-  }
-
-  // Data rows (highest row at top)
-  for (let r = numRows - 1; r >= 0; r--) {
-    const lbl = document.createElement('div');
-    lbl.className = 'g2d-label g2d-row-label';
-    lbl.textContent = r;
-    grid2dEl.appendChild(lbl);
-
-    for (let c = 0; c < numCols; c++) {
-      const cell = document.createElement('div');
-      const data = grid[r]?.[c];
-      cell.className = 'g2d-cell' + (data?.isHead ? ' head' : '');
-      cell.textContent = data ? data.symbol : '_';
-      grid2dEl.appendChild(cell);
-    }
-  }
-}
-
-// Hook into existing render cycle
-const _origRenderTape = renderTape;
-renderTape = function () {
-  _origRenderTape();
-  render2DGrid();
-};
 
 // ─── Resizable split ────────────────────────────────────────────────────────
 
