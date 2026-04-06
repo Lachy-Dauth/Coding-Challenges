@@ -42,6 +42,7 @@ function parseProgram(src) {
   return { rules, errors };
 }
 
+// Standalone matchRule — kept for external callers (tests, converters)
 function matchRule(rules, state, symbol) {
   // Priority: exact+exact > exact+wildcard > wildcard+exact > wildcard+wildcard
   const priorities = [
@@ -68,22 +69,51 @@ class TuringMachine {
     this.state   = '';
     this.steps   = 0;
     this.rules   = [];
+    this.ruleMap = null;
     this.halted  = false;
     this.history = [];
+    this.recording = true;
+  }
+
+  // Build O(1) lookup map keyed by "state\0symbol"
+  // First rule per key wins (matches Array.find semantics)
+  _buildRuleMap(rules) {
+    const map = new Map();
+    for (const rule of rules) {
+      const key = rule.state + '\0' + rule.symbol;
+      if (!map.has(key)) map.set(key, rule);
+    }
+    this.ruleMap = map;
+  }
+
+  // O(1) rule lookup — 4 Map.get calls instead of up to 4×R array scans
+  _matchRule(state, symbol) {
+    const m = this.ruleMap;
+    return m.get(state + '\0' + symbol)
+        ?? m.get(state + '\0*')
+        ?? m.get('*\0' + symbol)
+        ?? m.get('*\0*')
+        ?? null;
   }
 
   load(rules, tapeStr, initState) {
     this.rules = rules;
+    this._buildRuleMap(rules);
 
-    // '*' in tape input marks head start position
+    // Tokenize: space-delimited if spaces present, else char-by-char
+    let tokens = tapeStr.includes(' ')
+      ? tapeStr.trim().split(/\s+/)
+      : tapeStr.split('').filter(c => c !== '');
+
+    // '*' token marks head start position
     let headPos = 0;
-    const starIdx = tapeStr.indexOf('*');
+    const starIdx = tokens.indexOf('*');
     if (starIdx !== -1) {
       headPos = starIdx;
-      tapeStr = tapeStr.slice(0, starIdx) + tapeStr.slice(starIdx + 1);
+      tokens.splice(starIdx, 1);
     }
 
-    this.tape    = tapeStr.split('').map(c => c === '_' ? BLANK : c);
+    this.tape    = tokens.map(t => t === '_' ? BLANK : t);
     if (this.tape.length === 0) this.tape = [BLANK];
 
     this.head    = Math.min(headPos, this.tape.length - 1);
@@ -91,19 +121,24 @@ class TuringMachine {
     this.steps   = 0;
     this.halted  = false;
     this.history = [];
+    this.recording = true;
   }
 
   get(i) {
-    return this.tape[i] ?? BLANK;
+    return (i >= 0 && i < this.tape.length) ? this.tape[i] : BLANK;
   }
 
   // Extend tape leftward if i < 0, shifting all indices.
   set(i, ch) {
     if (i < 0) {
-      const shift = -i;
-      for (let k = 0; k < shift; k++) this.tape.unshift(BLANK);
-      this.head += shift;
-      i = 0;
+      const grow = Math.max(-i, this.tape.length, 64);
+      const oldLen = this.tape.length;
+      const newTape = new Array(grow + oldLen);
+      for (let j = 0; j < grow; j++) newTape[j] = BLANK;
+      for (let j = 0; j < oldLen; j++) newTape[grow + j] = this.tape[j];
+      this.tape = newTape;
+      this.head += grow;
+      i += grow;
     }
     while (i >= this.tape.length) this.tape.push(BLANK);
     this.tape[i] = ch;
@@ -113,46 +148,63 @@ class TuringMachine {
   step() {
     if (this.halted) return 'halted';
 
-    const sym  = this.get(this.head);
-    const symKey = (sym === BLANK) ? '_' : sym;
-    const rule = matchRule(this.rules, this.state, symKey);
+    // Inline tape read (avoid method-call overhead)
+    const head = this.head;
+    const tape = this.tape;
+    const sym = head < tape.length ? tape[head] : BLANK;
+    const symKey = sym === BLANK ? '_' : sym;
 
+    // O(1) Map lookup instead of O(R) linear scan
+    const rule = this._matchRule(this.state, symKey);
     if (!rule) return 'no-rule';
 
-    const readDisplay  = symKey;
-    const rawWrite     = rule.newSymbol === '*' ? sym
-                       : rule.newSymbol === '_'  ? BLANK
-                       : rule.newSymbol;
-    const writeDisplay = (rawWrite === BLANK) ? '_' : rawWrite;
-    const newState     = rule.newState === '*' ? this.state : rule.newState;
+    const rawWrite = rule.newSymbol === '*' ? sym
+                   : rule.newSymbol === '_' ? BLANK
+                   : rule.newSymbol;
+    const newState = rule.newState === '*' ? this.state : rule.newState;
 
-    this.set(this.head, rawWrite);
+    // Inline tape write
+    if (head >= tape.length) {
+      while (head >= tape.length) tape.push(BLANK);
+    }
+    tape[head] = rawWrite;
 
-    this.history.push({
-      step: this.steps + 1,
-      state: this.state,
-      read: readDisplay,
-      write: writeDisplay,
-      dir: rule.dir,
-      newState,
-      head: this.head,
-      rule,
-    });
+    // Only allocate history entry when recording
+    if (this.recording) {
+      this.history.push({
+        step: this.steps + 1,
+        state: this.state,
+        read: symKey,
+        write: rawWrite === BLANK ? '_' : rawWrite,
+        dir: rule.dir,
+        newState,
+        head,
+        rule,
+      });
+    }
 
-    if      (rule.dir === 'l') this.head--;
-    else if (rule.dir === 'r') this.head++;
-
-    // Extend right if needed
-    while (this.head >= this.tape.length) this.tape.push(BLANK);
-    // Extend left if head went negative
-    if (this.head < 0) {
-      this.tape.unshift(BLANK);
-      this.head = 0;
+    // Move head
+    const dir = rule.dir;
+    if (dir === 'r') {
+      this.head = head + 1;
+      if (this.head >= tape.length) tape.push(BLANK);
+    } else if (dir === 'l') {
+      this.head = head - 1;
+      // Amortized leftward growth: double the tape instead of O(N) unshift
+      if (this.head < 0) {
+        const oldLen = tape.length;
+        const grow = Math.max(1, oldLen, 64);
+        const newTape = new Array(grow + oldLen);
+        for (let j = 0; j < grow; j++) newTape[j] = BLANK;
+        for (let j = 0; j < oldLen; j++) newTape[grow + j] = tape[j];
+        this.tape = newTape;
+        this.head += grow;
+      }
     }
 
     this.state  = newState;
     this.steps++;
-    this.halted = this.state.startsWith('halt');
+    this.halted = newState.startsWith('halt');
 
     if (this.halted)       return 'halted';
     if (rule.breakpoint)   return 'breakpoint';

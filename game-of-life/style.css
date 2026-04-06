@@ -1,0 +1,129 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: 'Courier New', monospace;
+  background: #fff;
+  color: #111;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+header {
+  background: #111;
+  color: #fff;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+#controls {
+  background: #f0f0f0;
+  border-bottom: 2px solid #111;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.ctrl-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ctrl-row label {
+  font-size: 12px;
+  color: #555;
+}
+
+.ctrl-row input[type="number"] {
+  width: 60px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  border: 1px solid #aaa;
+  padding: 4px 6px;
+  background: #fff;
+  outline: none;
+}
+
+.ctrl-row input[type="number"]:focus {
+  border-color: #111;
+}
+
+button {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: bold;
+  border: 1px solid #ccc;
+  padding: 6px 12px;
+  cursor: pointer;
+  background: #fff;
+  color: #111;
+  transition: background 0.1s, color 0.1s;
+}
+
+button:hover { background: #111; color: #fff; }
+button.active { background: #111; color: #fff; }
+
+#btn-export {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+#btn-export:hover {
+  background: #333;
+}
+
+.speed-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #555;
+  margin-left: auto;
+}
+
+.speed-wrap input[type="range"] {
+  width: 80px;
+  accent-color: #111;
+}
+
+#gen-label {
+  font-size: 12px;
+  color: #555;
+  margin-left: auto;
+  font-weight: bold;
+}
+
+#grid-wrap {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+  min-height: 0;
+}
+
+#grid {
+  cursor: crosshair;
+  image-rendering: pixelated;
+}
