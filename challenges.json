@@ -1,0 +1,34 @@
+[
+  {
+    "title": "Automata Studio",
+    "tag": "Theory \u00b7 Simulation",
+    "desc": "Build and simulate DFAs, NFAs, GNFAs, PDAs, Turing Machines, and CFGs in the browser. Convert between representations \u2014 NFA\u2192DFA, DFA minimisation, GNFA\u2192regex, regex\u2192NFA, and CFG\u2192CNF \u2014 with step-by-step visualisation and LaTeX export.",
+    "chips": ["COMP4141", "finite automata", "pushdown automata", "Turing machines", "formal languages"],
+    "href": "./automata-studio/index.html",
+    "featured": true
+  },
+  {
+    "title": "Turing Machine Simulator",
+    "tag": "Theory",
+    "desc": "Write transition rules in a plain-text format, load a tape, and step through the universal model of computation one rule at a time. Includes breakpoints and a pattern-based automated test suite.",
+    "chips": ["computability theory", "transition rules", "tape automata", "test suite"],
+    "href": "./turing-simulation/index.html",
+    "featured": true
+  },
+  {
+    "title": "Boids",
+    "tag": "Simulation",
+    "desc": "Craig Reynolds\u2019 classic emergent flocking algorithm from 1987. Three local forces \u2014 separation, alignment, cohesion \u2014 produce complex collective motion from zero central coordination.",
+    "chips": ["emergent behaviour", "swarm intelligence", "Reynolds 1987", "canvas"],
+    "href": "./boids/index.html",
+    "featured": true
+  },
+  {
+    "title": "Tic Tac Toe",
+    "tag": "Game \u00b7 AI \u00b7 2P",
+    "desc": "Four variants on the classic 3\u00d73 grid \u2014 a perfect minimax AI, an easy one-ply opponent, a handicapped baby-mode, and a local two-player mode. Pick your difficulty.",
+    "chips": ["minimax", "adversarial search", "difficulty scaling", "local multiplayer"],
+    "href": "./tic-tac-toe/index.html",
+    "featured": false
+  }
+]

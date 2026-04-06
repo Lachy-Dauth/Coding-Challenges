@@ -13,7 +13,7 @@
     <p class="header-eyebrow">Lachlan Dauth &mdash; Projects</p>
     <h1 class="header-title">CODING<br><em>CHALLENGES</em></h1>
     <div class="header-meta">
-      <span class="header-meta-item">4 projects</span>
+      <span class="header-meta-item" id="project-count">4 projects</span>
       <span class="header-meta-sep"></span>
       <span class="header-meta-item">Games &middot; Simulations &middot; Theory</span>
       <span class="header-meta-sep"></span>
@@ -29,36 +29,9 @@
   </footer>
 
   <script>
-    const ITEMS = [
-      {
-        title:  "Tic Tac Toe",
-        tag:    "Game · AI · 2P",
-        desc:   "Four variants on the classic 3×3 grid — a perfect minimax AI, an easy one-ply opponent, a handicapped baby-mode, and a local two-player mode. Pick your difficulty.",
-        chips:  ["minimax", "adversarial search", "difficulty scaling", "local multiplayer"],
-        href:   "./tic-tac-toe/index.html",
-      },
-      {
-        title:  "Boids",
-        tag:    "Simulation",
-        desc:   "Craig Reynolds' classic emergent flocking algorithm from 1987. Three local forces — separation, alignment, cohesion — produce complex collective motion from zero central coordination.",
-        chips:  ["emergent behaviour", "swarm intelligence", "Reynolds 1987", "canvas"],
-        href:   "./boids/index.html",
-      },
-      {
-        title:  "Turing Machine Simulator",
-        tag:    "Theory",
-        desc:   "Write transition rules in a plain-text format, load a tape, and step through the universal model of computation one rule at a time. Includes breakpoints and a pattern-based automated test suite.",
-        chips:  ["computability theory", "transition rules", "tape automata", "test suite"],
-        href:   "./turing-simulation/index.html",
-      },
-      {
-        title:  "Automata Studio",
-        tag:    "Theory · Simulation",
-        desc:   "Build and simulate DFAs, NFAs, GNFAs, PDAs, Turing Machines, and CFGs in the browser. Convert between representations — NFA→DFA, DFA minimisation, GNFA→regex, regex→NFA, and CFG→CNF — with step-by-step visualisation and LaTeX export.",
-        chips:  ["COMP4141", "finite automata", "pushdown automata", "Turing machines", "formal languages"],
-        href:   "./automata-studio/index.html",
-      },
-    ];
+    fetch('./challenges.json').then(r => r.json()).then(ITEMS => {
+
+    document.getElementById('project-count').textContent = ITEMS.length + ' projects';
 
     const ARROW = `<svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -133,6 +106,8 @@
       li.querySelector('.c-launch').addEventListener('click', e => e.stopPropagation());
 
       list.appendChild(li);
+    });
+
     });
 
     // year
