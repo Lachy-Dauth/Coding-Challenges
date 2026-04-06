@@ -17,13 +17,13 @@ $ block0 # block1 # block2 # ... # blockN $
 - Result: `$ w1^ w2 ... wn $`
 
 ## Phase 1: Find Hat
-- Scan right from `$` to find `s^`
+- Scan left to `$`, then scan right to find `s^`
 - Read the symbol under hat → determines which 2D rule fires
-- Transition to the appropriate direction phase based on the 2D rule
+- Transition to the write phase
 
 ## Phase 2: Write
 - Replace `s^` with `s'^` (new symbol with hat, per the 2D transition)
-- Then branch to the direction handler
+- Then branch to the direction handler (peek phase) based on the rule's direction
 
 ## Phase 3: Direction Handlers
 
@@ -31,117 +31,107 @@ $ block0 # block1 # block2 # ... # blockN $
 
 #### R_peek
 - From hat, move right one cell
-- If `#` or `$` → at edge → R_expand
-- Else → R_moveRight
+- If `#` or `$` → at right edge of block → R_expand
+- Else → R_move (not at edge, just shift markers)
 
-#### R_expand (edge case)
-- Need to insert one blank cell at the end of EVERY block
-- Go to start of tape (`$`)
-- For each block: scan to `#`/`$`, shift the separator and everything after it right by one, insert `_` before the separator
-- This is a multi-pass shift: find `#`, carry everything right by 1, repeat for next `#`
-- After all blocks expanded, fall through to R_moveRight
+#### R_expand
+- Need to insert one blank cell at the end of EVERY block (to keep all blocks the same width)
+- Go left to `$` (start of tape)
+- Scan right for each unmarked `#`:
+  - Replace `#` with `_` (the inserted blank)
+  - Carry `#'` (marked separator) rightward through a carry chain — each cell's value is displaced one position right
+  - When carrying `$`, write it to the blank past the end, then rewind to `$` and repeat for the next `#`
+- After all `#` are processed, expand the final `$` the same way (replace with `_`, place `$` one right)
+- Cleanup: scan left replacing all `#'` back to `#`
+- Fall through to R_move
 
-#### R_moveRight
-- Move all `^` and `~` markers one cell right
-- Scan tape: find `s^`, replace with `s`, write `s'^` to the cell on the right (need to carry)
-- Same for each `s~` → shift right
-- After all markers moved, go back to hat → Phase 1 (next step)
+#### R_move
+- Shift all `^` and `~` markers one cell right
+- Go left to `$`, then scan right
+- When a hatted symbol `s^` is found: strip to `s`, move right, add `^` to that cell (`t` → `t^`)
+- When a tilded symbol `s~` is found: strip to `s`, move right, add `~` to that cell (`t` → `t~`)
+- Continue scanning right until `$`
+- After all markers shifted → findHat for the new state
 
 ### L (move left)
 
 #### L_peek
 - From hat, move left one cell
-- If `$` or `#` → at left edge → L_boundary (stay in place, do nothing)
-- Else → L_moveLeft
+- If `$` or `#` → at left edge of block → boundary clamp (stay in place, go to findHat)
+- Else → L_move
 
-#### L_boundary
-- Head stays, go back to hat → Phase 1
-
-#### L_moveLeft
-- Move all `^` and `~` markers one cell left
-- Same carry logic as R but leftward
-- After done → Phase 1
+#### L_move
+- Shift all `^` and `~` markers one cell left
+- Go right to `$`, then scan left
+- When a hatted symbol `s^` is found: strip to `s`, move left, add `^` to that cell
+- When a tilded symbol `s~` is found: strip to `s`, move left, add `~` to that cell
+- Continue scanning left until `$`
+- After all markers shifted → findHat for the new state
 
 ### U (move up)
 
 #### U_peek
-- From hat, check if hat is in the LAST block (block ends with `$` not `#`)
-- Scan right from hat to next `#` or `$`
-- If `$` → last block → U_expand
-- If `#` → not last block → U_moveUp
+- From hat, scan right to next `#` or `$`
+- If `$` → hat is in the last block → U_expand
+- If `#` → not last block → U_move
 
-#### U_expand (edge case)
-- Append a new block of same width as existing blocks
-- Replace trailing `$` with `#`
-- Write `width` blank cells
-- Write `$`
-- Also add `~` marker in the new block at the same column as hat
-- Fall through to U_moveUp
+#### U_expand
+- Append a new block of same width as existing blocks using a ping-pong approach:
+  - Replace trailing `$` with `#'` (marked separator), write `$` one cell right
+  - Go left to start of hat's block
+  - Mark: scan right, find first unmarked cell in the old block, mark it with `'`
+    - If it's a hatted cell `s^`, mark as `s^'` and use a special variant that writes `_~` in the new block (preserving column alignment)
+    - Otherwise mark `s` as `s'` and write `_` in the new block
+  - Go right to `$`, replace with the new cell value, write `$` one right
+  - Repeat until hitting `#'` (all cells marked)
+  - Finalize: replace `#'` with `#`, unmark all `s'` → `s` and `s^'` → `s^`
+- Fall through to U_move
 
-#### U_moveUp
-- Replace `s^` with `s~`
-- Scan right past `#` to find `s~` in the next block
-- Replace that `s~` with `s^`
-- Go back to hat → Phase 1
+#### U_move
+- Go left to `$`, scan right to find hat `s^`
+- Replace `s^` with `s~` (demote to tilde)
+- Scan right past `#` into the next block to find `t~`
+- Replace `t~` with `t^` (promote to hat)
+- Go to findHat for the new state
 
 ### D (move down)
 
 #### D_peek
-- Check if hat is in the FIRST block (block starts with `$` not `#`)
-- Scan left from hat to `#` or `$`
-- If `$` → first block → D_boundary (stay in place)
-- If `#` → not first block → D_moveDown
+- From hat, scan left to `#` or `$`
+- If `$` → hat is in the first block → boundary clamp (stay in place, go to findHat)
+- If `#` → not first block → D_move
 
-#### D_boundary
-- Head stays → Phase 1
-
-#### D_moveDown
-- Replace `s^` with `s~`
-- Scan left past `#` to find `s~` in the previous block
-- Replace that `s~` with `s^`
-- Go back to hat → Phase 1
+#### D_move
+- Go right to `$`, scan left to find hat `s^`
+- Replace `s^` with `s~` (demote to tilde)
+- Scan left past `#` into the previous block to find `t~`
+- Replace `t~` with `t^` (promote to hat)
+- Go to findHat for the new state
 
 ### * (stay)
-- Do nothing → Phase 1
-
-## Shared Sub-operations
-
-### scan_right_to_boundary
-- Skip regular symbols, `~` symbols until hitting `#` or `$`
-
-### scan_left_to_boundary
-- Skip regular symbols, `~` symbols until hitting `#` or `$`
-
-### shift_right_by_one
-- Carry chain: read cell, write carried value, carry read value, repeat
-- Need per-symbol carry states
-
-### expand_all_blocks
-- Used by R_expand
-- Insert `_` before each `#` and before final `$`
-- Shift everything after the insertion point right by 1
-- Repeat for each separator
-
-### rewind_to_hat
-- Scan left/right to find `s^`, used to return after operations
+- Do nothing → findHat for the new state
 
 ## State Naming Convention
 ```
-{2Dstate}_{readSym}_{direction}_{phase}_{subphase}_{carriedSymbol}
+{2Dstate}_{readSym}_{phase}_{subphase}_{detail}
 ```
 Each 2D rule generates its own full set of 1D states. The 2D transition info (write symbol, direction, new state) is hardcoded into the generated rules.
 
 Examples for 2D rule `copy 1 Y u w1`:
+- `copy_scanHat` — scanning right for hatted symbol
 - `copy_1_write` — replace `1^` with `Y^` on the tape
-- `copy_1_U_peek` — check if hat is in last block
-- `copy_1_U_expand_scan` — scanning right for next `#`/`$` to expand
-- `copy_1_U_expand_shift_0` — shifting a block right, carrying `0`
-- `copy_1_U_move` — swap `^` with `~` in the next block up
-- `copy_1_U_done` — rewind to hat, transition to `w1` (the 2D new-state)
+- `w1_U_peek` — check if hat is in last block
+- `w1_U_expand_start` — begin appending new block
+- `w1_U_expand_mark` — marking old-block cells one at a time
+- `w1_U_expand_goRight_hat` — going right to add `_~` (hat column variant)
+- `w1_U_move_scanHat` — scanning for hat to demote to tilde
+- `w1_U_move_findTilde` — scanning for tilde in next block to promote to hat
 
 Examples for 2D rule `scan 0 0 r scan`:
+- `scan_scanHat` — scanning right for hatted symbol
 - `scan_0_write` — replace `0^` with `0^` (same symbol)
-- `scan_0_R_peek` — check if hat is at right edge of block
-- `scan_0_R_expand_scan` — expand blocks if at edge
-- `scan_0_R_move_carry_0^` — carrying hatted `0` one cell right
-- `scan_0_R_done` — rewind to hat, transition to `scan`
+- `scan_R_peek` — move right one cell, check for `#`/`$`
+- `scan_R_expand_findSep` — scanning for next `#` to expand
+- `scan_R_expand_carry_0h` — carry chain, currently carrying `0^`
+- `scan_R_move_scan` — scanning for markers to shift right
+- `scan_R_move_addHat` — adding `^` to the next cell
