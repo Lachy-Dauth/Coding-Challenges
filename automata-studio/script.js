@@ -304,6 +304,7 @@ class GNFA extends AutomataBase {
   getTransitions() {
     const result = [];
     for (const [key, label] of this.delta) {
+      if (label === '∅') continue;
       const sep = key.indexOf('|||');
       result.push({ from: key.slice(0, sep), symbol: label, to: key.slice(sep + 3) });
     }
