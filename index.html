@@ -13,7 +13,7 @@
     <p class="header-eyebrow">Lachlan Dauth &mdash; Projects</p>
     <h1 class="header-title">CODING<br><em>CHALLENGES</em></h1>
     <div class="header-meta">
-      <span class="header-meta-item">5 projects</span>
+      <span class="header-meta-item">4 projects</span>
       <span class="header-meta-sep"></span>
       <span class="header-meta-item">Games &middot; Simulations &middot; Theory</span>
       <span class="header-meta-sep"></span>
@@ -46,17 +46,13 @@
       },
       {
         title:  "Turing Machine Simulator",
-        tag:    "Theory",
-        desc:   "Write transition rules in a plain-text format, load a tape, and step through the universal model of computation one rule at a time. Includes breakpoints and a pattern-based automated test suite.",
-        chips:  ["computability theory", "transition rules", "tape automata", "test suite"],
-        href:   "./turing-simulation/index.html",
-      },
-      {
-        title:  "2D Turing Machine",
-        tag:    "Theory · 2D",
-        desc:   "A two-dimensional extension of the classic Turing machine — the head moves up, down, left, and right on an infinite grid. Import Game of Life patterns or write your own 2D programs.",
-        chips:  ["2D tape", "grid automata", "Game of Life", "URL sharing"],
-        href:   "./turing-simulation/2d/index.html",
+        tag:    "Theory · 1D · 2D",
+        desc:   "Write transition rules in a plain-text format, load a tape, and step through the universal model of computation. Classic 1D mode with breakpoints and a test suite, or 2D mode where the head moves on an infinite grid with Game of Life import.",
+        chips:  ["computability theory", "transition rules", "tape automata", "2D grid", "Game of Life", "test suite"],
+        links:  [
+          { label: "1D", href: "./turing-simulation/index.html" },
+          { label: "2D", href: "./turing-simulation/2d/index.html" },
+        ],
       },
       {
         title:  "Game of Life",
@@ -86,6 +82,12 @@
 
       const num = String(i + 1).padStart(2, '0');
 
+      const launchHTML = item.links
+        ? `<div class="c-launch-group">${item.links.map(l =>
+            `<a class="c-launch" href="${l.href}">${l.label} ${ARROW}</a>`
+          ).join('')}</div>`
+        : `<a class="c-launch" href="${item.href}">Launch ${ARROW}</a>`;
+
       li.innerHTML = `
         <div class="c-header">
           <span class="c-num">${num}</span>
@@ -102,9 +104,7 @@
                   ${item.chips.map(c => `<span class="c-chip">${c}</span>`).join('')}
                 </div>
               </div>
-              <a class="c-launch" href="${item.href}">
-                Launch ${ARROW}
-              </a>
+              ${launchHTML}
             </div>
           </div>
         </div>
@@ -136,8 +136,8 @@
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
       });
 
-      // stop launch link from toggling closed
-      li.querySelector('.c-launch').addEventListener('click', e => e.stopPropagation());
+      // stop launch links from toggling closed
+      li.querySelectorAll('.c-launch').forEach(a => a.addEventListener('click', e => e.stopPropagation()));
 
       list.appendChild(li);
     });

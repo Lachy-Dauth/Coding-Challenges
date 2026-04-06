@@ -241,6 +241,13 @@ body {
   border-radius: 3px;
 }
 
+/* Launch button group (multiple buttons) */
+.c-launch-group {
+  display: flex;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
 /* Launch button */
 .c-launch {
   display: inline-flex;
@@ -337,6 +344,7 @@ body {
     padding-left: clamp(1.5rem, 6vw, 5rem);
   }
 
+  .c-launch-group { width: 100%; }
   .c-launch { width: 100%; justify-content: center; }
 
   .site-footer { flex-direction: column; gap: 0.5rem; }

@@ -61,6 +61,43 @@ function matchRule(rules, state, symbol) {
 
 const BLANK = ' '; // space internally; '_' in user-facing display
 
+// Parse tape input string into cells and head position.
+// Handles both single-row ("ab*c") and multi-row ("ab|*cd") formats.
+// Returns { cells: [{row, col, ch}], headRow, headCol }.
+function parseTapeString(tapeStr) {
+  let headRow = 0, headCol = 0;
+  const cells = [];
+
+  if (tapeStr.includes('|')) {
+    const rows = tapeStr.split('|');
+    for (let r = 0; r < rows.length; r++) {
+      let row = rows[r];
+      const si = row.indexOf('*');
+      if (si !== -1) {
+        headRow = r;
+        headCol = si;
+        row = row.slice(0, si) + row.slice(si + 1);
+      }
+      for (let c = 0; c < row.length; c++) {
+        cells.push({ row: r, col: c, ch: row[c] });
+      }
+    }
+  } else {
+    let str = tapeStr;
+    const si = str.indexOf('*');
+    if (si !== -1) {
+      headCol = si;
+      str = str.slice(0, si) + str.slice(si + 1);
+    }
+    for (let c = 0; c < str.length; c++) {
+      cells.push({ row: 0, col: c, ch: str[c] });
+    }
+    if (str.length > 0) headCol = Math.min(headCol, str.length - 1);
+  }
+
+  return { cells, headRow, headCol };
+}
+
 class TuringMachine2D {
   constructor() {
     this.tape    = new Map(); // key: "row,col" → char
@@ -77,37 +114,10 @@ class TuringMachine2D {
     this.rules = rules;
     this.tape  = new Map();
 
-    let headRow = 0;
-    let headCol = 0;
-
-    if (tapeStr.includes('|')) {
-      // Multi-row format: row0|row1|row2|...  (* marks head position)
-      const rows = tapeStr.split('|');
-      for (let r = 0; r < rows.length; r++) {
-        let row = rows[r];
-        const si = row.indexOf('*');
-        if (si !== -1) {
-          headRow = r;
-          headCol = si;
-          row = row.slice(0, si) + row.slice(si + 1);
-        }
-        for (let c = 0; c < row.length; c++) {
-          const ch = row[c] === '_' ? BLANK : row[c];
-          if (ch !== BLANK) this.tape.set(`${r},${c}`, ch);
-        }
-      }
-    } else {
-      // Single-row format (original)
-      const si = tapeStr.indexOf('*');
-      if (si !== -1) {
-        headCol = si;
-        tapeStr = tapeStr.slice(0, si) + tapeStr.slice(si + 1);
-      }
-      for (let c = 0; c < tapeStr.length; c++) {
-        const ch = tapeStr[c] === '_' ? BLANK : tapeStr[c];
-        if (ch !== BLANK) this.tape.set(`0,${c}`, ch);
-      }
-      if (tapeStr.length > 0) headCol = Math.min(headCol, tapeStr.length - 1);
+    const { cells, headRow, headCol } = parseTapeString(tapeStr);
+    for (const { row, col, ch } of cells) {
+      const resolved = ch === '_' ? BLANK : ch;
+      if (resolved !== BLANK) this.tape.set(`${row},${col}`, resolved);
     }
 
     this.row     = headRow;

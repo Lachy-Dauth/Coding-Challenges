@@ -128,7 +128,7 @@ function cellAt(e) {
 
 function stopRun() {
   running = false;
-  clearInterval(timer);
+  clearTimeout(timer);
   timer = null;
   document.getElementById('btn-run').textContent = 'Run';
   document.getElementById('btn-run').classList.remove('active');
