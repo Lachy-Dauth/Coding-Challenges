@@ -205,7 +205,7 @@ function boostFrame() {
   for (let i = 0; i < batch; i++) {
     const result = machine.step();
     if (result !== 'ok') {
-      const last = machine.history[machine.history.length - 1];
+      const last = machine.lastEntry;
       if (last) addHistoryRow(last);
 
       if (result === 'halted') {

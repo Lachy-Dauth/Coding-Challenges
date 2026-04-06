@@ -169,19 +169,23 @@ class TuringMachine {
     }
     tape[head] = rawWrite;
 
-    // Only allocate history entry when recording
+    // Build history entry (always needed for breakpoints/halts)
+    const entry = {
+      step: this.steps + 1,
+      state: this.state,
+      read: symKey,
+      write: rawWrite === BLANK ? '_' : rawWrite,
+      dir: rule.dir,
+      newState,
+      head,
+      rule,
+    };
+
     if (this.recording) {
-      this.history.push({
-        step: this.steps + 1,
-        state: this.state,
-        read: symKey,
-        write: rawWrite === BLANK ? '_' : rawWrite,
-        dir: rule.dir,
-        newState,
-        head,
-        rule,
-      });
+      this.history.push(entry);
     }
+
+    this.lastEntry = entry;
 
     // Move head
     const dir = rule.dir;
