@@ -56,3 +56,28 @@ Write transition rules in a plain-text format, load a tape, and step through exe
 - Append `!` to a rule to pause execution on that transition
 - Shareable URLs — the full program is compressed and encoded in the fragment, no server needed
 - Automated test suite with pattern-based tape generation (e.g. `a^n b^m`)
+
+---
+
+### Automata Studio
+[lachy-dauth.github.io/Coding-Challenges/automata-studio](https://lachy-dauth.github.io/Coding-Challenges/automata-studio/)
+
+A browser-based automata simulator built as a study aid for **COMP4141** (Theory of Computation), inspired by MIT 18.404J.
+
+| Type | Status |
+|------|--------|
+| DFA (Deterministic Finite Automaton) | Supported |
+| NFA (Nondeterministic Finite Automaton) | Supported |
+| GNFA (Generalised NFA) | Supported |
+| PDA (Pushdown Automaton) | Supported |
+| Turing Machine | Supported |
+| CFG (Context-Free Grammar) | Supported |
+
+**Features:**
+- **NFA → DFA** conversion via subset construction
+- **DFA Minimisation** via table-filling (Myhill-Nerode) algorithm
+- **GNFA → Regex** conversion via state elimination
+- **Regex → NFA** via Thompson's construction (`|`, `*`, `+`, `?`, `()`, `ε`)
+- **CFG → CNF** step-by-step Chomsky Normal Form conversion
+- Step-by-step simulation for DFA, NFA, PDA, and Turing Machine
+- Undo/Redo, keyboard shortcuts, shareable links, LaTeX/TikZ export

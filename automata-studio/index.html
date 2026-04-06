@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automata Studio</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <h1>⚡ Automata Studio</h1>
+  <nav id="nav">
+    <button data-type="DFA" class="active">DFA</button>
+    <button data-type="NFA">NFA</button>
+    <button data-type="GNFA">GNFA</button>
+    <button data-type="PDA">PDA</button>
+    <button data-type="TM">Turing</button>
+    <button data-type="CFG">CFG</button>
+  </nav>
+  <button id="theme-btn" onclick="toggleTheme()">&#9728; Classic</button>
+</header>
+
+<main>
+  <!-- ── Sidebar ── -->
+  <aside id="sidebar">
+
+    <!-- Tool -->
+    <div class="panel" id="canvas-tool-panel">
+      <h3>Canvas Tool</h3>
+      <div class="row">
+        <button class="btn active" id="tool-add" onclick="setTool('add')">✚ Add</button>
+        <button class="btn" id="tool-sel" onclick="setTool('select')">↖ Select</button>
+      </div>
+      <div class="hint" id="tool-hint">Click canvas to add states · Drag to move</div>
+    </div>
+
+    <!-- States -->
+    <div class="panel" id="states-panel">
+      <h3>States <span id="sc" style="color:var(--accent)">0</span></h3>
+      <div class="state-list" id="state-list"></div>
+      <button class="btn danger" id="del-btn" style="display:none" onclick="deleteSelected()">🗑 Delete Selected</button>
+    </div>
+
+    <!-- Transitions -->
+    <div class="panel" id="reg-trans-panel">
+      <h3>Add Transition</h3>
+      <div class="igroup">
+        <div class="label">From</div>
+        <select id="t-from"></select>
+      </div>
+      <div class="igroup">
+        <div class="label">Symbol</div>
+        <input type="text" id="t-sym" placeholder="e.g. a, 0, ε" maxlength="64">
+      </div>
+      <div class="igroup">
+        <div class="label">To</div>
+        <select id="t-to"></select>
+      </div>
+      <button class="btn primary" onclick="addTransition()">Add Transition</button>
+      <div id="t-list" style="margin-top:9px;max-height:110px;overflow-y:auto"></div>
+    </div>
+
+    <!-- Simulate -->
+    <div class="panel" id="sim-panel">
+      <h3>Simulate</h3>
+      <div class="igroup">
+        <div class="label">Input String</div>
+        <input type="text" id="sim-str" placeholder="e.g. aabb" oninput="onSimInput()">
+      </div>
+      <div class="row">
+        <button class="btn primary" onclick="runSim()" style="flex:1">▶ Run</button>
+        <button class="btn" onclick="resetSim()" style="flex:0 0 auto;width:auto;padding:7px 12px">↺</button>
+      </div>
+      <div class="sim-row" id="step-ctrl" style="display:none">
+        <button id="btn-bk" onclick="stepBack()" disabled>◀</button>
+        <span id="step-ind">0 / 0</span>
+        <button id="btn-fwd" onclick="stepFwd()">▶</button>
+      </div>
+      <div class="result-box">
+        <div style="display:flex;align-items:center;gap:8px">
+          Result: <span class="badge idle" id="result-badge">—</span>
+        </div>
+        <div class="path-row" id="path-row"></div>
+        <div id="err-msg"></div>
+      </div>
+    </div>
+
+    <!-- DFA Import panel (shown only in DFA mode) -->
+    <div class="panel" id="dfa-convert-panel">
+      <h3>Import &amp; Tools</h3>
+      <button class="btn primary" onclick="nfaToDfa()">📥 Convert NFA → DFA</button>
+      <div style="font-size:11px;color:var(--dim);margin-top:5px">
+        Runs subset construction on the current NFA diagram.
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:8px 0">
+      <button class="btn" onclick="minimizeDfa()">⊆ Minimize DFA</button>
+      <div style="font-size:11px;color:var(--dim);margin-top:5px">
+        Removes unreachable &amp; equivalent states (table-filling).
+      </div>
+    </div>
+
+    <!-- NFA Regex panel (shown only in NFA mode) -->
+    <div class="panel" id="nfa-regex-panel" style="display:none">
+      <h3>Regex → NFA</h3>
+      <div class="igroup">
+        <div class="label">Regular Expression</div>
+        <input type="text" id="nfa-regex-input" placeholder="(a|b)*abb" style="font-family:monospace" autocomplete="off">
+      </div>
+      <button class="btn primary" onclick="regexToNfa()">⟨R⟩ Build NFA</button>
+      <div style="font-size:11px;color:var(--dim);margin-top:5px">
+        Thompson's construction · use <code>|</code> union · <code>* + ?</code> · <code>()</code> · <code>ε</code>
+      </div>
+    </div>
+
+    <!-- GNFA Convert to Regex panel (shown only in GNFA mode) -->
+    <div class="panel" id="gnfa-panel" style="display:none">
+      <h3>Convert to Regex</h3>
+      <div class="label" style="margin-bottom:4px">Import source</div>
+      <div class="row" style="margin-bottom:6px">
+        <button class="btn active" id="gnfa-src-dfa" onclick="gnfaSetSource('DFA')" style="flex:1">DFA</button>
+        <button class="btn" id="gnfa-src-nfa" onclick="gnfaSetSource('NFA')" style="flex:1">NFA</button>
+      </div>
+      <button class="btn primary" onclick="gnfaImport()">📥 Import Diagram</button>
+      <div style="font-size:11px;color:var(--dim);margin:4px 0 8px">
+        Wraps the current diagram in a GNFA with new qS / qA states.
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:4px 0 8px">
+      <div class="label" style="margin-bottom:4px">Step elimination</div>
+      <div class="row">
+        <select id="gnfa-elim-sel" style="flex:1"><option value="">— choose —</option></select>
+        <button class="btn btn-half" onclick="gnfaEliminate()" style="flex:0 0 auto;padding:7px 10px">Elim</button>
+      </div>
+      <button class="btn" onclick="gnfaAutoRegex()" style="margin-top:6px">⚡ Auto Generate Regex</button>
+      <div id="gnfa-result" style="margin-top:8px;display:none">
+        <div class="label" style="margin-bottom:4px">Result:</div>
+        <div id="gnfa-regex" style="font-family:monospace;font-size:11px;background:var(--bg);padding:8px;border-radius:5px;word-break:break-all;border:1px solid var(--border);line-height:1.5"></div>
+      </div>
+    </div>
+
+    <!-- PDA Transitions panel (shown only in PDA mode) -->
+    <div class="panel" id="pda-trans-panel" style="display:none">
+      <h3>Add Transition</h3>
+      <div class="igroup">
+        <div class="label">From</div>
+        <select id="pda-t-from"></select>
+      </div>
+      <div class="row" style="gap:6px;margin-bottom:9px">
+        <div style="flex:1">
+          <div class="label">Input</div>
+          <input type="text" id="pda-t-input" placeholder="a or ε" maxlength="1">
+        </div>
+        <div style="flex:1">
+          <div class="label">Pop</div>
+          <input type="text" id="pda-t-pop" placeholder="A or ε" maxlength="1">
+        </div>
+        <div style="flex:1">
+          <div class="label">Push</div>
+          <input type="text" id="pda-t-push" placeholder="AB or ε" maxlength="8">
+        </div>
+      </div>
+      <div class="igroup">
+        <div class="label">To</div>
+        <select id="pda-t-to"></select>
+      </div>
+      <button class="btn primary" onclick="pdaAddTransition()">Add Transition</button>
+      <div id="pda-t-list" style="margin-top:9px;max-height:130px;overflow-y:auto"></div>
+    </div>
+
+    <!-- PDA Simulation panel (shown only in PDA mode) -->
+    <div class="panel" id="pda-panel" style="display:none">
+      <h3>Simulate</h3>
+      <div class="igroup">
+        <div class="label">Input String</div>
+        <input type="text" id="pda-input" placeholder="e.g. aabb" style="font-family:monospace">
+      </div>
+      <div class="row">
+        <button class="btn primary" onclick="pdaInit()" style="flex:1">▶ Run</button>
+        <button class="btn" onclick="pdaReset()" style="flex:0 0 auto;width:auto;padding:7px 12px">↺</button>
+      </div>
+      <div id="pda-sim-view" style="display:none;margin-top:8px">
+        <div id="pda-input-disp" style="font-family:monospace;font-size:12px;margin-bottom:6px;word-break:break-all"></div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:4px">Stack (top→bottom)</div>
+        <div id="pda-stack" style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px;min-height:28px"></div>
+        <div class="sim-row">
+          <button id="pda-btn-bk" onclick="pdaStepBack()" disabled>◀</button>
+          <span id="pda-step-ind" style="font-size:12px;color:var(--dim);flex:1;text-align:center">0 / 0</span>
+          <button id="pda-btn-fwd" onclick="pdaStepFwd()">▶</button>
+          <button onclick="pdaRunFull()" style="width:auto;padding:0 8px;height:30px;border-radius:15px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-size:11px" title="Jump to end">⏭</button>
+        </div>
+        <div class="result-box" style="margin-top:8px">
+          <div style="display:flex;align-items:center;gap:8px">
+            Result: <span class="badge idle" id="pda-badge">—</span>
+          </div>
+          <div class="err-msg" id="pda-err-msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TM Transitions panel (shown only in TM mode) -->
+    <div class="panel" id="tm-trans-panel" style="display:none">
+      <h3>Add Transition</h3>
+      <div class="igroup">
+        <div class="label">From</div>
+        <select id="tm-t-from"></select>
+      </div>
+      <div class="row" style="gap:6px;margin-bottom:9px">
+        <div style="flex:1">
+          <div class="label">Read</div>
+          <input type="text" id="tm-t-read" placeholder="0,1,_ …" maxlength="1">
+        </div>
+        <div style="flex:1">
+          <div class="label">Write</div>
+          <input type="text" id="tm-t-write" placeholder="0,1,_ …" maxlength="1">
+        </div>
+        <div style="flex:0 0 64px">
+          <div class="label">Dir</div>
+          <select id="tm-t-dir">
+            <option value="R">R</option>
+            <option value="L">L</option>
+            <option value="S">S</option>
+          </select>
+        </div>
+      </div>
+      <div class="igroup">
+        <div class="label">To</div>
+        <select id="tm-t-to"></select>
+      </div>
+      <button class="btn primary" onclick="tmAddTransition()">Add Transition</button>
+      <div id="tm-t-list" style="margin-top:9px;max-height:110px;overflow-y:auto"></div>
+    </div>
+
+    <!-- TM Simulation panel (shown only in TM mode) -->
+    <div class="panel" id="tm-panel" style="display:none">
+      <h3>Simulate</h3>
+      <div class="igroup">
+        <div class="label">Input Tape</div>
+        <input type="text" id="tm-input" placeholder="e.g. 0011" style="font-family:monospace">
+      </div>
+      <div class="row">
+        <button class="btn primary" onclick="tmInit()" style="flex:1">▶ Init</button>
+        <button class="btn" onclick="tmReset()" style="flex:0 0 auto;width:auto;padding:7px 12px">↺</button>
+      </div>
+      <div id="tm-sim-view" style="display:none;margin-top:8px">
+        <div id="tm-tape" style="overflow-x:auto;margin-bottom:6px"></div>
+        <div style="font-size:11px;color:var(--dim);margin-bottom:6px" id="tm-status"></div>
+        <div class="sim-row">
+          <button id="tm-btn-bk" onclick="tmStepBack()" disabled>◀</button>
+          <span id="tm-step-ind" style="font-size:12px;color:var(--dim);flex:1;text-align:center">0 / 0</span>
+          <button id="tm-btn-fwd" onclick="tmStepFwd()">▶</button>
+          <button onclick="tmRunFull()" style="width:auto;padding:0 8px;height:30px;border-radius:15px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-size:11px" title="Run to end">⏭</button>
+        </div>
+        <div class="result-box" style="margin-top:8px">
+          <div style="display:flex;align-items:center;gap:8px">
+            Result: <span class="badge idle" id="tm-badge">—</span>
+          </div>
+          <div class="err-msg" id="tm-err-msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CFG Input panel (shown only in CFG mode) -->
+    <div class="panel" id="cfg-input-panel" style="display:none">
+      <h3>Grammar Input</h3>
+      <div class="label" style="margin-bottom:4px">One rule per line, e.g. <code>S → aSb | ε</code></div>
+      <textarea id="cfg-textarea" rows="8" placeholder="S -> aSb | ε&#10;A -> aA | a"></textarea>
+      <button class="btn primary" onclick="cfgParse()" style="margin-top:6px">▶ Parse &amp; Convert</button>
+      <div id="cfg-parse-err" class="err-msg" style="margin-top:4px"></div>
+    </div>
+
+    <!-- CFG Step Control panel (shown after a successful parse) -->
+    <div class="panel" id="cfg-step-panel" style="display:none">
+      <h3>CNF Conversion</h3>
+      <div id="cfg-step-name" style="font-size:11px;color:var(--accent);margin-bottom:6px;font-weight:600;letter-spacing:.3px"></div>
+      <div class="sim-row">
+        <button id="cfg-btn-bk" onclick="cfgStepBack()" disabled>◀</button>
+        <span id="cfg-step-ind" style="font-size:12px;color:var(--dim);flex:1;text-align:center">0 / 0</span>
+        <button id="cfg-btn-fwd" onclick="cfgStepFwd()">▶</button>
+      </div>
+      <div id="cfg-step-desc" style="font-size:12px;color:var(--text);margin-top:8px;line-height:1.6;padding:8px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);min-height:60px"></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="panel" id="actions-panel">
+      <h3>Actions</h3>
+      <div class="row">
+        <button class="btn" id="undo-btn" onclick="App.undo()" title="Undo (Ctrl+Z)" disabled>↩ Undo</button>
+        <button class="btn" id="redo-btn" onclick="App.redo()" title="Redo (Ctrl+Y)" disabled>↪ Redo</button>
+      </div>
+      <button class="btn" onclick="clearAll()">🗑 Clear All</button>
+      <button class="btn" onclick="loadExample()">📖 Load Example</button>
+      <button class="btn" id="export-btn" onclick="exportLink()">🔗 Copy Link</button>
+      <button class="btn" id="latex-btn" onclick="exportLatex()">⟨/⟩ Export LaTeX</button>
+      <button class="btn" id="tuple-btn" onclick="exportTuple()">(Q,Σ,..) Tuple</button>
+    </div>
+
+  </aside>
+
+  <!-- ── Canvas ── -->
+  <div id="dfa-view" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+    <div class="canvas-bar">
+      <span id="canvas-hint">Right-click state or edge for options</span>
+      <span style="margin-left:auto;font-family:monospace" id="alpha-disp">Σ = ∅</span>
+      <div style="display:flex;align-items:center;gap:2px;flex-shrink:0">
+        <button onclick="fontSizeDown()" title="Decrease font size" style="width:26px;height:26px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-size:12px;line-height:1;padding:0">A−</button>
+        <button onclick="fontSizeReset()" id="font-size-level" title="Reset font size" style="min-width:42px;height:26px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);color:var(--dim);cursor:pointer;font-size:11px;padding:0 4px">100%</button>
+        <button onclick="fontSizeUp()" title="Increase font size" style="width:26px;height:26px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-size:12px;line-height:1;padding:0">A+</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:2px;flex-shrink:0">
+        <button onclick="zoomOut()" title="Zoom out" style="width:26px;height:26px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-size:15px;line-height:1;padding:0">−</button>
+        <button onclick="zoomReset()" id="zoom-level" title="Reset zoom" style="min-width:42px;height:26px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);color:var(--dim);cursor:pointer;font-size:11px;padding:0 4px">100%</button>
+        <button onclick="zoomIn()" title="Zoom in" style="width:26px;height:26px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-size:15px;line-height:1;padding:0">+</button>
+      </div>
+      <span id="status-txt" style="color:var(--green)">Ready</span>
+    </div>
+    <div id="canvas-wrap">
+      <canvas id="canvas"></canvas>
+    </div>
+  </div>
+
+  <!-- ── CFG View (replaces canvas when CFG tab is active) ── -->
+  <div id="cfg-view" style="display:none;flex:1;flex-direction:column;overflow:hidden">
+    <div class="canvas-bar">
+      <span id="cfg-hint">Enter a context-free grammar in the sidebar</span>
+      <span id="cfg-info" style="margin-left:auto;font-size:12px;color:var(--dim)"></span>
+    </div>
+    <div id="cfg-grammar-wrap">
+      <table id="cfg-grammar-table" class="cfg-table" style="display:none">
+        <thead>
+          <tr>
+            <th style="width:90px">Variable</th>
+            <th>Productions</th>
+          </tr>
+        </thead>
+        <tbody id="cfg-grammar-body"></tbody>
+      </table>
+      <div id="cfg-empty-state" class="cfg-empty">Enter a grammar in the sidebar panel and click "Parse &amp; Convert"</div>
+    </div>
+  </div>
+
+  <!-- ── Coming Soon ── -->
+  <div id="coming-soon" style="display:none">
+    <div style="font-size:60px">🚧</div>
+    <h2 id="cs-title">Coming Soon</h2>
+    <p id="cs-desc"></p>
+  </div>
+</main>
+
+<!-- Context Menu -->
+<div id="ctx-menu"></div>
+
+<!-- Symbol Prompt (used when drawing transitions on canvas) -->
+<div id="sym-overlay">
+  <div id="sym-box">
+    <h4>Transition symbol: <span class="sym-from" id="sym-from-lbl"></span><span class="sym-arrow">→</span><span class="sym-to" id="sym-to-lbl"></span></h4>
+    <input id="sym-input" type="text" placeholder="e.g. a, 0, ε" maxlength="64" autocomplete="off">
+    <div id="sym-btns">
+      <button onclick="App._symCancel()">Cancel</button>
+      <button class="ok" onclick="App._symConfirm()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- Inline edge editor (PDA double-click) -->
+<textarea id="edge-edit" style="display:none;position:fixed;z-index:999;font:13px monospace;padding:4px 6px;border:2px solid var(--accent,#4a9eff);border-radius:6px;background:var(--panel,#1e1e1e);color:var(--fg,#e0e0e0);resize:none;min-width:120px;min-height:40px;outline:none;line-height:1.5;white-space:pre" rows="2"></textarea>
+
+<script src="script.js"></script>
+</body>
+</html>
