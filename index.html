@@ -52,6 +52,12 @@
 
       const num = String(i + 1).padStart(2, '0');
 
+      const launchHTML = item.links
+        ? `<div class="c-launch-group">${item.links.map(l =>
+            `<a class="c-launch" href="${l.href}">${l.label} ${ARROW}</a>`
+          ).join('')}</div>`
+        : `<a class="c-launch" href="${item.href}">Launch ${ARROW}</a>`;
+
       li.innerHTML = `
         <div class="c-header">
           <span class="c-num">${num}</span>
@@ -68,9 +74,7 @@
                   ${item.chips.map(c => `<span class="c-chip">${c}</span>`).join('')}
                 </div>
               </div>
-              <a class="c-launch" href="${item.href}">
-                Launch ${ARROW}
-              </a>
+              ${launchHTML}
             </div>
           </div>
         </div>
@@ -102,8 +106,8 @@
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
       });
 
-      // stop launch link from toggling closed
-      li.querySelector('.c-launch').addEventListener('click', e => e.stopPropagation());
+      // stop launch links from toggling closed
+      li.querySelectorAll('.c-launch').forEach(a => a.addEventListener('click', e => e.stopPropagation()));
 
       list.appendChild(li);
     });

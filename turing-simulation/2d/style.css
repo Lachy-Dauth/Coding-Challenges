@@ -131,99 +131,44 @@ main {
   overflow: hidden;
 }
 
-/* Tape — full width above main */
+/* ── 2D Tape grid ── */
 #tape-panel {
   flex-shrink: 0;
   border-bottom: 2px solid #111;
 }
 
 #tape-scroll {
-  overflow-x: auto;
-  padding: 18px 0 10px;
-  background: #fff;
-  white-space: nowrap;
-}
-
-#tape-inner {
-  display: inline-flex;
-  padding: 0 12px;
-  min-width: 100%;
-  justify-content: center;
-}
-
-.tape-cell {
-  min-width: 32px;
-  height: 32px;
-  padding: 0 4px;
-  border: 1px solid #bbb;
-  border-right: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  background: #fff;
-  flex-shrink: 0;
-  position: relative;
-}
-
-.tape-cell:last-child { border-right: 1px solid #bbb; }
-
-.tape-cell.head {
-  background: #111;
-  color: #fff;
-  border-color: #111;
-}
-
-.tape-cell.head::after {
-  content: '▼';
-  position: absolute;
-  top: -15px;
-  font-size: 10px;
-  color: #111;
-}
-
-/* ── 2D grid view ── */
-#grid-2d-panel {
-  flex-shrink: 0;
-  border-bottom: 1px solid #111;
-  max-height: 500px;
-  display: flex;
-  flex-direction: column;
-}
-
-#grid-2d-scroll {
   overflow: auto;
   padding: 6px 0;
   background: #fff;
-  flex: 1;
-  min-height: 0;
 }
 
-#grid-2d {
+#tape-inner {
   display: grid;
   padding: 4px 12px 8px;
   justify-content: center;
 }
 
-.g2d-cell {
-  width: 26px;
-  height: 26px;
+.tape-cell {
+  width: 28px;
+  height: 28px;
   outline: 1px solid #bbb;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 14px;
   background: #fff;
+  position: relative;
 }
 
-.g2d-cell.head {
+.tape-cell.head {
   background: #111;
   color: #fff;
   outline: 2px solid #111;
   z-index: 1;
 }
 
-.g2d-label {
+.tape-label {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -232,19 +177,14 @@ main {
   user-select: none;
 }
 
-.g2d-row-label {
+.row-label {
   justify-content: flex-end;
   padding-right: 4px;
-  height: 26px;
+  height: 28px;
 }
 
-.g2d-col-label {
-  height: 14px;
-}
-
-#show-2d {
-  width: auto;
-  flex: none;
+.col-label {
+  height: 16px;
 }
 
 /* Config inputs */
@@ -351,19 +291,6 @@ button.active { background: #111; color: #fff; }
 
 #speed { width: 70px; accent-color: #111; }
 
-#boost-batch {
-  width: 60px;
-  font-family: 'Courier New', monospace;
-  font-size: 11px;
-  border: 1px solid #ccc;
-  padding: 4px 6px;
-  text-align: right;
-  background: #fff;
-  outline: none;
-}
-
-#boost-batch:focus { border-color: #111; }
-
 #btn-share.copied { background: #111; color: #6d6; }
 
 /* ── History ── */
@@ -399,89 +326,3 @@ button.active { background: #111; color: #fff; }
 
 #history-table tr:nth-child(even) td { background: #fafafa; }
 #history-table tr.current-step td { background: #fffde7; color: #111; font-weight: bold; }
-
-/* ── Test panel ── */
-.hidden { display: none !important; }
-
-#test-panel {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  border-bottom: 1px solid #111;
-  max-height: 320px;
-}
-
-#test-config {
-  padding: 6px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  background: #fff;
-}
-
-#pattern-error {
-  color: #c22;
-  font-size: 11px;
-  min-height: 0;
-  padding: 0 0 0 74px;
-}
-
-#test-config .input-row input[type="number"] {
-  width: 60px;
-  flex: none;
-}
-
-#test-run-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #f0f0f0;
-  border-top: 1px solid #ccc;
-  flex-shrink: 0;
-}
-
-#test-run-row button {
-  border-right: 1px solid #ccc;
-}
-
-#test-summary {
-  font-size: 11px;
-  color: #555;
-}
-#test-summary.pass { color: #2a2; font-weight: bold; }
-#test-summary.fail { color: #c22; font-weight: bold; }
-
-#test-results {
-  flex: 1;
-  overflow-y: auto;
-  min-height: 0;
-  background: #fff;
-}
-
-#test-results table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 11px;
-}
-
-#test-results th {
-  background: #111;
-  color: #fff;
-  padding: 3px 6px;
-  text-align: left;
-  position: sticky;
-  top: 0;
-  font-weight: normal;
-  font-size: 10px;
-}
-
-#test-results td {
-  padding: 2px 6px;
-  border-bottom: 1px solid #eee;
-  font-family: 'Courier New', monospace;
-}
-
-#test-results tr.t-pass td { color: #aaa; }
-#test-results tr.t-fail td { background: #fff0f0; color: #c00; font-weight: bold; }
-#test-results tr.t-fail td:first-child::before { content: '✗ '; }
-#test-results tr.t-pass td:first-child::before { content: '✓ '; color: #2a2; }

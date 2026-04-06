@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game of Life</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>Conway's Game of Life</header>
+
+<main>
+  <div id="controls">
+    <div class="ctrl-row">
+      <label>Width</label>
+      <input type="number" id="grid-w" value="20" min="3" max="100">
+      <label>Height</label>
+      <input type="number" id="grid-h" value="20" min="3" max="100">
+      <button id="btn-resize">Resize</button>
+    </div>
+    <div class="ctrl-row">
+      <button id="btn-step">Step</button>
+      <button id="btn-run">Run</button>
+      <button id="btn-clear">Clear</button>
+      <button id="btn-random">Random</button>
+      <div class="speed-wrap">
+        Speed
+        <input type="range" id="speed" min="1" max="6" value="4">
+      </div>
+    </div>
+    <div class="ctrl-row">
+      <button id="btn-export">Export to 2D Turing Machine</button>
+      <span id="gen-label">Gen: 0</span>
+    </div>
+  </div>
+  <div id="grid-wrap">
+    <canvas id="grid"></canvas>
+  </div>
+</main>
+
+<script src="life.js"></script>
+</body>
+</html>

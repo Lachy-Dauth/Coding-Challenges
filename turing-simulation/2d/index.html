@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2D Turing Machine Simulator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <span>2D Turing Machine Simulator</span>
+  <a href="../" class="nav-link">1D Mode</a>
+</header>
+
+<div id="tape-panel">
+  <div class="panel-header">Tape (upper-right semi-infinite grid)</div>
+  <div id="tape-scroll">
+    <div id="tape-inner"></div>
+  </div>
+</div>
+
+<main>
+
+  <!-- LEFT: program editor -->
+  <div id="program-panel">
+    <div class="panel-header">Program — state symbol new-symbol dir(l/r/u/d/*) new-state</div>
+    <div id="editor">
+      <div id="line-numbers"></div>
+      <textarea id="program" spellcheck="false" placeholder="; 2D Turing Machine
+; Format: state symbol new-symbol direction new-state
+; Directions: l=left r=right u=up d=down *=stay
+; Boundary: head stays in place at row 0 / col 0
+
+; Example: draw an L-shape
+0 _ 1 r 1
+1 _ 1 r 2
+2 _ 1 r 3
+3 _ 1 u 4
+4 _ 1 u 5
+5 _ 1 * halt
+"></textarea>
+    </div>
+  </div>
+
+  <div id="resize-handle"></div>
+
+  <!-- RIGHT: inputs + status + controls stacked -->
+  <div id="right-panel">
+
+    <div id="config-panel">
+      <div class="panel-header">Config</div>
+
+      <div id="input-area">
+        <div class="input-row">
+          <label>Tape</label>
+          <input type="text" id="tape-input" value="" placeholder="initial tape on row 0 (* = head col)">
+        </div>
+        <div class="input-row">
+          <label>Init State</label>
+          <input type="text" id="init-state" value="0" placeholder="starting state">
+        </div>
+      </div>
+    </div>
+
+    <div id="status-bar">
+      <div class="status-item">State: <span id="st-state">—</span></div>
+      <div class="status-item">Row: <span id="st-row">—</span></div>
+      <div class="status-item">Col: <span id="st-col">—</span></div>
+      <div class="status-item">Steps: <span id="st-steps">0</span></div>
+      <div id="status-msg">Load to begin</div>
+    </div>
+
+    <div id="controls-panel">
+      <button id="btn-load">Load</button>
+      <button id="btn-step" disabled>Step</button>
+      <button id="btn-run" disabled>Run</button>
+      <button id="btn-reset" disabled>Reset</button>
+      <button id="btn-share">Share</button>
+      <button id="btn-demo">Demo</button>
+      <button id="btn-convert">1D</button>
+      <div id="speed-wrap">
+        Speed
+        <input type="range" id="speed" min="1" max="6" value="3">
+        <span id="speed-label">medium</span>
+      </div>
+    </div>
+
+    <div id="history-panel">
+      <table id="history-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>State</th>
+            <th>Read</th>
+            <th>Write</th>
+            <th>Dir</th>
+            <th>New State</th>
+            <th>Pos</th>
+          </tr>
+        </thead>
+        <tbody id="history-body"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+</main>
+
+<script src="machine.js"></script>
+<script src="converter.js"></script>
+<script src="ui.js"></script>
+</body>
+</html>
