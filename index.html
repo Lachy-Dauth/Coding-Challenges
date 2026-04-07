@@ -69,6 +69,7 @@
           <div class="c-body-inner">
             <div class="c-body-content">
               <div class="c-desc">
+                ${item.date ? `<span class="c-date">${item.date}</span>` : ''}
                 <p>${item.desc}</p>
                 <div class="c-chips">
                   ${item.chips.map(c => `<span class="c-chip">${c}</span>`).join('')}

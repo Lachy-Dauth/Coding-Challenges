@@ -216,6 +216,16 @@ body {
   max-width: 540px;
 }
 
+.c-date {
+  display: inline-block;
+  font-family: var(--ff-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 0.85rem;
+}
+
 .c-desc p {
   font-size: clamp(0.9rem, 1.5vw, 1.05rem);
   line-height: 1.7;
