@@ -13,13 +13,14 @@
     "title": "Turing Machine Simulator",
     "tag": "Theory \u00b7 1D \u00b7 2D",
     "date": "Apr 2026",
-    "desc": "Write transition rules in a plain-text format, load a tape, and step through the universal model of computation. Classic 1D mode with breakpoints and a test suite, or 2D mode where the head moves on an infinite grid with Game of Life import.",
-    "chips": ["computability theory", "transition rules", "tape automata", "2D grid", "Game of Life", "test suite"],
+    "desc": "Write transition rules in a plain-text format, load a tape, and step through the universal model of computation. Includes a 2D mode whose star feature is a 2D\u21921D compiler: any 2D Turing program is mechanically rewritten into an equivalent 1D program that lays each row out between separators and shuffles head markers around \u2014 a constructive proof that the extra dimension buys you no extra power.",
+    "chips": ["computability theory", "2D\u21921D compiler", "transition rules", "tape automata", "Game of Life", "test suite"],
     "links": [
       { "label": "1D", "href": "./turing-simulation/index.html" },
       { "label": "2D", "href": "./turing-simulation/2d/index.html" }
     ],
-    "featured": true
+    "featured": true,
+    "directlyFeatured": true
   },
   {
     "title": "Game of Life",
@@ -28,7 +29,7 @@
     "desc": "Conway\u2019s classic cellular automaton on a configurable grid. Draw patterns, run generations, and export the board state directly into the 2D Turing Machine simulator.",
     "chips": ["cellular automata", "Conway 1970", "canvas", "TM export"],
     "href": "./game-of-life/index.html",
-    "featured": false
+    "featured": true
   },
   {
     "title": "Typing Tester PEG Grammar",
@@ -46,7 +47,7 @@
     "desc": "Craig Reynolds\u2019 classic emergent flocking algorithm from 1987. Three local forces \u2014 separation, alignment, cohesion \u2014 produce complex collective motion from zero central coordination.",
     "chips": ["emergent behaviour", "swarm intelligence", "Reynolds 1987", "canvas"],
     "href": "./boids/index.html",
-    "featured": false
+    "featured": true
   },
   {
     "title": "Tic Tac Toe",
