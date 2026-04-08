@@ -18,18 +18,18 @@
   const diffSeg   = $('difficulty-seg');
   const customVal = $('custom-val');
   const restartBtn = $('restart-btn');
-  const liveWpm   = $('live-wpm');
-  const liveAcc   = $('live-acc');
   const liveTimer = $('live-timer');
   const liveTimerLabel = $('live-timer-label');
   const resultsEl = $('results');
   const resWpm    = $('res-wpm');
   const resAcc    = $('res-acc');
   const resRaw    = $('res-raw');
+  const resTrueAcc = $('res-true-acc');
   const resChars  = $('res-chars');
   const resTime   = $('res-time');
   const resMode   = $('res-mode');
   const resRestartBtn = $('res-restart');
+  const resReplayBtn  = $('res-replay');
 
   /* ---------- Configuration state ---------- */
   const state = {
@@ -40,14 +40,16 @@
     pos:        0,
     typed:      [],        // 'correct' | 'wrong' | null per char
     autoSkipped: [],       // true if char was auto-consumed as indent
+    visited:    [],        // true once a char has been attempted at least once
+    firstAttemptCorrect: 0,
+    firstAttemptTotal:   0,
     correctChars:   0,
     incorrectChars: 0,
     startTime:  0,
     endTime:    0,
     running:    false,
     finished:   false,
-    timerId:    null,
-    wpmTick:    null
+    timerId:    null
   };
 
   /* ---------- Snippet generation + render ---------- */
@@ -58,9 +60,17 @@
       target: state.target,
       difficulty: state.difficulty
     });
+    resetRunState();
+  }
+
+  // Used by both Restart (new snippet) and Replay (same snippet).
+  function resetRunState() {
     state.pos = 0;
     state.typed = new Array(state.snippet.length).fill(null);
     state.autoSkipped = new Array(state.snippet.length).fill(false);
+    state.visited = new Array(state.snippet.length).fill(false);
+    state.firstAttemptCorrect = 0;
+    state.firstAttemptTotal = 0;
     state.correctChars = 0;
     state.incorrectChars = 0;
     state.running = false;
@@ -68,10 +78,8 @@
     state.startTime = 0;
     state.endTime = 0;
     if (state.timerId) { clearInterval(state.timerId); state.timerId = null; }
-    if (state.wpmTick) { clearInterval(state.wpmTick); state.wpmTick = null; }
 
     render();
-    updateStatsDisplay();
     if (state.mode === 'time') {
       liveTimer.textContent = state.target;
       liveTimerLabel.textContent = 'Time';
@@ -81,6 +89,11 @@
     }
     hintEl.hidden = false;
     resultsEl.hidden = true;
+  }
+
+  function replay() {
+    // Keep the existing snippet; just reset progress.
+    resetRunState();
   }
 
   // Render the code character-by-character, wrapping each in a span
@@ -174,7 +187,6 @@
         if (remaining <= 0) finish();
       }, 100);
     }
-    state.wpmTick = setInterval(updateStatsDisplay, 250);
   }
 
   function onKeyDown(e) {
@@ -207,6 +219,12 @@
     startIfNeeded();
 
     const expected = state.snippet[state.pos];
+    // Track first-attempt correctness (used for "true accuracy").
+    if (!state.visited[state.pos]) {
+      state.visited[state.pos] = true;
+      state.firstAttemptTotal++;
+      if (ch === expected) state.firstAttemptCorrect++;
+    }
     if (ch === expected) {
       state.typed[state.pos] = 'correct';
       state.correctChars++;
@@ -222,6 +240,11 @@
     if (expected === '\n') {
       while (state.pos < state.snippet.length &&
              state.snippet[state.pos] === ' ') {
+        if (!state.visited[state.pos]) {
+          state.visited[state.pos] = true;
+          state.firstAttemptTotal++;
+          state.firstAttemptCorrect++;
+        }
         state.typed[state.pos] = 'correct';
         state.autoSkipped[state.pos] = true;
         state.correctChars++;
@@ -233,7 +256,7 @@
     positionCaret();
 
     if (state.mode === 'words') {
-      const done = correctWordsTyped();
+      const done = totalWordsTyped();
       liveTimer.textContent = done + '/' + state.target;
       if (done >= state.target) finish();
     }
@@ -273,25 +296,26 @@
 
   /* ---------- Stats ---------- */
 
-  function correctWordsTyped() {
+  // Counts every word that has been reached (including ones containing
+  // typos) — used for the live word counter and the words-mode finish
+  // condition so a typo doesn't stall the test.
+  function totalWordsTyped() {
     let count = 0;
     let inWord = false;
-    let wordOk = true;
     for (let i = 0; i < state.pos; i++) {
       const ch = state.snippet[i];
       if (/\s/.test(ch)) {
-        if (inWord && wordOk) count++;
+        if (inWord) count++;
         inWord = false;
-        wordOk = true;
       } else {
         inWord = true;
-        if (state.typed[i] !== 'correct') wordOk = false;
       }
     }
+    if (inWord) count++;
     return count;
   }
 
-  function computeWpm(elapsedSec) {
+  function computeTrueWpm(elapsedSec) {
     if (elapsedSec <= 0) return 0;
     return (state.correctChars / 5) / (elapsedSec / 60);
   }
@@ -304,12 +328,9 @@
     if (total === 0) return 1;
     return state.correctChars / total;
   }
-
-  function updateStatsDisplay() {
-    const now = state.running ? performance.now() : state.startTime;
-    const elapsed = state.running ? (now - state.startTime) / 1000 : 0;
-    liveWpm.textContent = Math.round(computeWpm(elapsed));
-    liveAcc.textContent = Math.round(computeAccuracy() * 100) + '%';
+  function computeTrueAccuracy() {
+    if (state.firstAttemptTotal === 0) return 1;
+    return state.firstAttemptCorrect / state.firstAttemptTotal;
   }
 
   /* ---------- Finish + save ---------- */
@@ -320,32 +341,34 @@
     state.running = false;
     state.endTime = performance.now();
     if (state.timerId) { clearInterval(state.timerId); state.timerId = null; }
-    if (state.wpmTick) { clearInterval(state.wpmTick); state.wpmTick = null; }
 
     const elapsed = (state.endTime - state.startTime) / 1000;
-    const wpm = computeWpm(elapsed);
-    const raw = computeRawWpm(elapsed);
-    const acc = computeAccuracy();
+    const trueWpm = computeTrueWpm(elapsed);
+    const rawWpm  = computeRawWpm(elapsed);
+    const acc     = computeAccuracy();
+    const trueAcc = computeTrueAccuracy();
 
-    resWpm.textContent = Math.round(wpm);
+    resWpm.textContent = Math.round(trueWpm);
     resAcc.textContent = (acc * 100).toFixed(1) + '%';
-    resRaw.textContent = Math.round(raw);
+    resTrueAcc.textContent = (trueAcc * 100).toFixed(1) + '%';
+    resRaw.textContent = Math.round(rawWpm);
     resChars.textContent = state.correctChars + '/' + state.incorrectChars;
     resTime.textContent = elapsed.toFixed(1) + 's';
     resMode.textContent = state.mode + ' ' + state.target + ' · ' + state.difficulty;
     resultsEl.hidden = false;
 
     saveResult({
-      date:       Date.now(),
-      mode:       state.mode,
-      target:     state.target,
-      difficulty: state.difficulty,
-      wpm:        Math.round(wpm * 10) / 10,
-      rawWpm:     Math.round(raw * 10) / 10,
-      accuracy:   Math.round(acc * 1000) / 1000,
-      correct:    state.correctChars,
-      incorrect:  state.incorrectChars,
-      elapsed:    Math.round(elapsed * 10) / 10
+      date:         Date.now(),
+      mode:         state.mode,
+      target:       state.target,
+      difficulty:   state.difficulty,
+      wpm:          Math.round(trueWpm * 10) / 10,
+      rawWpm:       Math.round(rawWpm * 10) / 10,
+      accuracy:     Math.round(acc * 1000) / 1000,
+      trueAccuracy: Math.round(trueAcc * 1000) / 1000,
+      correct:      state.correctChars,
+      incorrect:    state.incorrectChars,
+      elapsed:      Math.round(elapsed * 10) / 10
     });
   }
 
@@ -422,6 +445,7 @@
   });
   restartBtn.addEventListener('click', () => { regenerate(); testArea.focus(); });
   resRestartBtn.addEventListener('click', () => { regenerate(); testArea.focus(); });
+  resReplayBtn.addEventListener('click',  () => { replay();     testArea.focus(); });
 
   /* ---------- Key handling ---------- */
 

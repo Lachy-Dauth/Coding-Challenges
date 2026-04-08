@@ -49,8 +49,6 @@
   </div>
 
   <div id="stats-live">
-    <div class="stat"><span class="label">WPM</span><span class="value" id="live-wpm">0</span></div>
-    <div class="stat"><span class="label">Accuracy</span><span class="value" id="live-acc">100%</span></div>
     <div class="stat"><span class="label" id="live-timer-label">Time</span><span class="value" id="live-timer">30</span></div>
   </div>
 
@@ -66,21 +64,23 @@
   <div class="result-card">
     <div class="result-grid">
       <div class="result-big">
-        <div class="label">WPM</div>
+        <div class="label">True WPM</div>
         <div class="value" id="res-wpm">0</div>
       </div>
       <div class="result-big">
-        <div class="label">Accuracy</div>
-        <div class="value" id="res-acc">0%</div>
+        <div class="label">True accuracy</div>
+        <div class="value" id="res-true-acc">0%</div>
       </div>
       <div class="result-row">
-        <div><span class="label">Raw</span><span id="res-raw">0</span></div>
-        <div><span class="label">Chars</span><span id="res-chars">0/0/0/0</span></div>
+        <div><span class="label">Raw WPM</span><span id="res-raw">0</span></div>
+        <div><span class="label">Accuracy</span><span id="res-acc">0%</span></div>
+        <div><span class="label">Chars</span><span id="res-chars">0/0</span></div>
         <div><span class="label">Time</span><span id="res-time">0s</span></div>
         <div><span class="label">Mode</span><span id="res-mode">time 30</span></div>
       </div>
     </div>
     <div class="result-actions">
+      <button id="res-replay"  class="action-btn" type="button">Replay</button>
       <button id="res-restart" class="action-btn" type="button">Restart</button>
       <a id="res-profile" class="action-btn" href="./profile.html">Profile &rarr;</a>
     </div>
