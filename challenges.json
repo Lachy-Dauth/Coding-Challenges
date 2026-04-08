@@ -27,16 +27,16 @@
     "desc": "Conway\u2019s classic cellular automaton on a configurable grid. Draw patterns, run generations, and export the board state directly into the 2D Turing Machine simulator.",
     "chips": ["cellular automata", "Conway 1970", "canvas", "TM export"],
     "href": "./game-of-life/index.html",
-    "featured": true
+    "featured": false
   },
   {
-    "title": "Python Typing Tester",
+    "title": "Typing Tester PEG Grammar",
     "tag": "Tool \u00b7 Typing",
     "date": "Apr 2026",
     "desc": "Practise typing Python at speed. A weighted PEG-grammar generator builds plausible Python snippets \u2014 assignments, if/else, for loops, function and class definitions \u2014 and you race against either a time limit or a word limit. Live WPM and accuracy, easy/normal/hard difficulty, and results saved in local storage with a progress-over-time chart.",
     "chips": ["PEG grammar", "weighted generation", "WPM", "localStorage", "canvas chart"],
     "href": "./python-typing-tester/index.html",
-    "featured": false
+    "featured": true
   },
   {
     "title": "Boids",
