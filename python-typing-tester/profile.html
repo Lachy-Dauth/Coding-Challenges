@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile &mdash; Python Typing Tester</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+<header>
+  <span>Profile</span>
+  <a href="./index.html">&larr; Back to test</a>
+</header>
+
+<main>
+  <section class="summary-grid">
+    <div class="sum-stat">
+      <div class="label">Best WPM</div>
+      <div class="value" id="best-wpm">&mdash;</div>
+    </div>
+    <div class="sum-stat">
+      <div class="label">Average WPM</div>
+      <div class="value" id="avg-wpm">&mdash;</div>
+    </div>
+    <div class="sum-stat">
+      <div class="label">Average Accuracy</div>
+      <div class="value" id="avg-acc">&mdash;</div>
+    </div>
+    <div class="sum-stat">
+      <div class="label">Runs</div>
+      <div class="value" id="total-runs">0</div>
+    </div>
+  </section>
+
+  <section id="filters">
+    <div class="filter-group">
+      <label>Mode</label>
+      <div class="seg" data-filter="mode">
+        <button data-val="all" class="active">All</button>
+        <button data-val="time">Time</button>
+        <button data-val="words">Words</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <label>Difficulty</label>
+      <div class="seg" data-filter="difficulty">
+        <button data-val="all" class="active">All</button>
+        <button data-val="easy">Easy</button>
+        <button data-val="normal">Normal</button>
+        <button data-val="hard">Hard</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <label id="target-filter-label">Length</label>
+      <div class="seg" id="target-filter" data-filter="target">
+        <button data-val="all" class="active">All</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="chart-section">
+    <canvas id="progress-chart" width="960" height="280"></canvas>
+  </section>
+
+  <section id="runs-section">
+    <div class="runs-head">
+      <h3>All runs</h3>
+      <span class="count" id="run-count">0 runs</span>
+      <button id="clear-all">Clear all</button>
+    </div>
+    <div id="runs-list"></div>
+  </section>
+</main>
+
+<footer>
+  Results filtered live from local storage
+</footer>
+
+<script src="./profile.js"></script>
+</body>
+</html>

@@ -30,6 +30,15 @@
     "featured": true
   },
   {
+    "title": "Python Typing Tester",
+    "tag": "Tool \u00b7 Typing",
+    "date": "Apr 2026",
+    "desc": "Practise typing Python at speed. A weighted PEG-grammar generator builds plausible Python snippets \u2014 assignments, if/else, for loops, function and class definitions \u2014 and you race against either a time limit or a word limit. Live WPM and accuracy, easy/normal/hard difficulty, and results saved in local storage with a progress-over-time chart.",
+    "chips": ["PEG grammar", "weighted generation", "WPM", "localStorage", "canvas chart"],
+    "href": "./python-typing-tester/index.html",
+    "featured": false
+  },
+  {
     "title": "Boids",
     "tag": "Simulation",
     "date": "May 2024",

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Python Typing Tester</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+<header>
+  <span>Python Typing Tester</span>
+  <a href="./profile.html">Profile &rarr;</a>
+</header>
+
+<main>
+  <div id="config-bar">
+    <div class="seg" id="mode-seg">
+      <button data-mode="time" class="active">Time</button>
+      <button data-mode="words">Words</button>
+    </div>
+
+    <div class="seg" id="time-seg">
+      <button data-val="15">15</button>
+      <button data-val="30" class="active">30</button>
+      <button data-val="60">60</button>
+      <button data-val="120">120</button>
+    </div>
+
+    <div class="seg" id="words-seg" hidden>
+      <button data-val="10">10</button>
+      <button data-val="25" class="active">25</button>
+      <button data-val="50">50</button>
+      <button data-val="100">100</button>
+    </div>
+
+    <div class="custom-wrap">
+      <label for="custom-val">Custom</label>
+      <input type="number" id="custom-val" min="1" step="1">
+    </div>
+
+    <div class="seg" id="difficulty-seg">
+      <button data-diff="easy">Easy</button>
+      <button data-diff="normal" class="active">Normal</button>
+      <button data-diff="hard">Hard</button>
+    </div>
+
+    <button id="restart-btn" title="Restart (Tab)">Restart</button>
+  </div>
+
+  <div id="stats-live">
+    <div class="stat"><span class="label" id="live-timer-label">Time</span><span class="value" id="live-timer">30</span></div>
+  </div>
+
+  <div id="test-area" tabindex="0">
+    <pre id="code-display" aria-label="Type this Python code"></pre>
+    <div id="caret"></div>
+    <div id="hint">Click here or press any key to start</div>
+  </div>
+
+</main>
+
+<div id="results" hidden>
+  <div class="result-card">
+    <div class="result-grid">
+      <div class="result-big">
+        <div class="label">True WPM</div>
+        <div class="value" id="res-wpm">0</div>
+      </div>
+      <div class="result-big">
+        <div class="label">True accuracy</div>
+        <div class="value" id="res-true-acc">0%</div>
+      </div>
+      <div class="result-row">
+        <div><span class="label">Raw WPM</span><span id="res-raw">0</span></div>
+        <div><span class="label">Accuracy</span><span id="res-acc">0%</span></div>
+        <div><span class="label">Chars</span><span id="res-chars">0/0</span></div>
+        <div><span class="label">Time</span><span id="res-time">0s</span></div>
+        <div><span class="label">Mode</span><span id="res-mode">time 30</span></div>
+      </div>
+    </div>
+    <div class="result-actions">
+      <button id="res-replay"  class="action-btn" type="button">Replay</button>
+      <button id="res-restart" class="action-btn" type="button">Restart</button>
+      <a id="res-profile" class="action-btn" href="./profile.html">Profile &rarr;</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Type Python &middot; Tab to restart &middot; Results saved locally
+</footer>
+
+<script src="./grammar.js"></script>
+<script src="./main.js"></script>
+</body>
+</html>
