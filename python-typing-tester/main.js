@@ -29,6 +29,7 @@
   const resChars  = $('res-chars');
   const resTime   = $('res-time');
   const resMode   = $('res-mode');
+  const resRestartBtn = $('res-restart');
 
   /* ---------- Configuration state ---------- */
   const state = {
@@ -420,6 +421,7 @@
     regenerate();
   });
   restartBtn.addEventListener('click', () => { regenerate(); testArea.focus(); });
+  resRestartBtn.addEventListener('click', () => { regenerate(); testArea.focus(); });
 
   /* ---------- Key handling ---------- */
 

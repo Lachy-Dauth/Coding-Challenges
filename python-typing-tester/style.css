@@ -241,13 +241,39 @@ main {
 }
 #test-area:focus #hint { display: none; }
 
-/* ── Results panel ───────────────────────────────────── */
+/* ── Results overlay ─────────────────────────────────
+   Fixed full-viewport backdrop with a blur so the test
+   behind is softly dimmed while the card is up. ──── */
 #results {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(14, 13, 20, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.result-card {
   background: var(--surface);
   border: 1px solid var(--border-hover);
-  border-radius: 6px;
-  padding: 1.5rem 1.75rem;
+  border-radius: 8px;
+  padding: 2rem 2.25rem;
+  min-width: min(520px, 100%);
+  max-width: 560px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.25s ease;
 }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .result-grid { display: flex; flex-direction: column; gap: 1.25rem; }
 .result-big {
   display: flex;
@@ -282,6 +308,33 @@ main {
   color: var(--muted);
   font-size: 0.78rem;
   margin-right: 0.35rem;
+}
+
+.result-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+.action-btn {
+  flex: 1;
+  text-align: center;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 0.7rem 1.1rem;
+  font-family: var(--ff-mono);
+  font-size: 0.88rem;
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.action-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
 }
 
 /* ── Footer ──────────────────────────────────────────── */

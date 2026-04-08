@@ -60,7 +60,10 @@
     <div id="hint">Click here or press any key to start</div>
   </div>
 
-  <div id="results" hidden>
+</main>
+
+<div id="results" hidden>
+  <div class="result-card">
     <div class="result-grid">
       <div class="result-big">
         <div class="label">WPM</div>
@@ -77,8 +80,12 @@
         <div><span class="label">Mode</span><span id="res-mode">time 30</span></div>
       </div>
     </div>
+    <div class="result-actions">
+      <button id="res-restart" class="action-btn" type="button">Restart</button>
+      <a id="res-profile" class="action-btn" href="./profile.html">Profile &rarr;</a>
+    </div>
   </div>
-</main>
+</div>
 
 <footer>
   Type Python &middot; Tab to restart &middot; Results saved locally
