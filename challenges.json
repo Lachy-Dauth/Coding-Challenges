@@ -6,7 +6,8 @@
     "desc": "Build and simulate DFAs, NFAs, GNFAs, PDAs, Turing Machines, and CFGs in the browser. Convert between representations \u2014 NFA\u2192DFA, DFA minimisation, GNFA\u2192regex, regex\u2192NFA, and CFG\u2192CNF \u2014 with step-by-step visualisation and LaTeX export.",
     "chips": ["COMP4141", "finite automata", "pushdown automata", "Turing machines", "formal languages"],
     "href": "./automata-studio/index.html",
-    "featured": true
+    "featured": true,
+    "directlyFeatured": true
   },
   {
     "title": "Turing Machine Simulator",
