@@ -8,13 +8,16 @@
 </head>
 <body>
 
-<header>Python Typing Tester</header>
+<header>
+  <span>Python Typing Tester</span>
+  <a href="./profile.html">Profile &rarr;</a>
+</header>
 
 <main>
   <div id="config-bar">
     <div class="seg" id="mode-seg">
-      <button data-mode="time" class="active">time</button>
-      <button data-mode="words">words</button>
+      <button data-mode="time" class="active">Time</button>
+      <button data-mode="words">Words</button>
     </div>
 
     <div class="seg" id="time-seg">
@@ -32,66 +35,54 @@
     </div>
 
     <div class="custom-wrap">
-      <label for="custom-val">custom</label>
-      <input type="number" id="custom-val" min="1" step="1" placeholder="">
+      <label for="custom-val">Custom</label>
+      <input type="number" id="custom-val" min="1" step="1">
     </div>
 
     <div class="seg" id="difficulty-seg">
-      <button data-diff="easy">easy</button>
-      <button data-diff="normal" class="active">normal</button>
-      <button data-diff="hard">hard</button>
+      <button data-diff="easy">Easy</button>
+      <button data-diff="normal" class="active">Normal</button>
+      <button data-diff="hard">Hard</button>
     </div>
 
-    <button id="restart-btn" title="Restart (Tab+Enter)">restart</button>
+    <button id="restart-btn" title="Restart (Tab)">Restart</button>
   </div>
 
   <div id="stats-live">
-    <div class="stat"><span class="label">wpm</span><span class="value" id="live-wpm">0</span></div>
-    <div class="stat"><span class="label">acc</span><span class="value" id="live-acc">100%</span></div>
-    <div class="stat"><span class="label" id="live-timer-label">time</span><span class="value" id="live-timer">30</span></div>
+    <div class="stat"><span class="label">WPM</span><span class="value" id="live-wpm">0</span></div>
+    <div class="stat"><span class="label">Accuracy</span><span class="value" id="live-acc">100%</span></div>
+    <div class="stat"><span class="label" id="live-timer-label">Time</span><span class="value" id="live-timer">30</span></div>
   </div>
 
   <div id="test-area" tabindex="0">
     <pre id="code-display" aria-label="Type this Python code"></pre>
     <div id="caret"></div>
-    <div id="hint">click here or press any key to start</div>
+    <div id="hint">Click here or press any key to start</div>
   </div>
 
   <div id="results" hidden>
     <div class="result-grid">
       <div class="result-big">
-        <div class="label">wpm</div>
+        <div class="label">WPM</div>
         <div class="value" id="res-wpm">0</div>
       </div>
       <div class="result-big">
-        <div class="label">accuracy</div>
+        <div class="label">Accuracy</div>
         <div class="value" id="res-acc">0%</div>
       </div>
       <div class="result-row">
-        <div><span class="label">raw</span> <span id="res-raw">0</span></div>
-        <div><span class="label">chars</span> <span id="res-chars">0/0/0/0</span></div>
-        <div><span class="label">time</span> <span id="res-time">0s</span></div>
-        <div><span class="label">mode</span> <span id="res-mode">time 30</span></div>
+        <div><span class="label">Raw</span><span id="res-raw">0</span></div>
+        <div><span class="label">Chars</span><span id="res-chars">0/0/0/0</span></div>
+        <div><span class="label">Time</span><span id="res-time">0s</span></div>
+        <div><span class="label">Mode</span><span id="res-mode">time 30</span></div>
       </div>
     </div>
   </div>
-
-  <section id="history-section">
-    <div class="hist-head">
-      <h3>progress over time</h3>
-      <div class="hist-controls">
-        <span id="hist-count">0 runs saved</span>
-        <button id="clear-history" title="Clear all saved results">clear</button>
-      </div>
-    </div>
-    <canvas id="progress-chart" width="900" height="220"></canvas>
-    <div id="history-list"></div>
-  </section>
-
-  <footer>
-    <span>type python &middot; press Tab+Enter to restart &middot; results saved locally</span>
-  </footer>
 </main>
+
+<footer>
+  Type Python &middot; Tab to restart &middot; Results saved locally
+</footer>
 
 <script src="./grammar.js"></script>
 <script src="./main.js"></script>
