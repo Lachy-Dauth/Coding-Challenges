@@ -147,6 +147,14 @@
     caretEl.style.left    = (rect.left - areaRect.left) + 'px';
     caretEl.style.top     = (rect.top  - areaRect.top)  + 'px';
     caretEl.style.height  = rect.height + 'px';
+
+    // 3. Restart the blink animation so the caret is fully opaque
+    //    immediately after it moves — otherwise it can land mid-way
+    //    through the "off" phase of the blink and look invisible.
+    caretEl.style.animation = 'none';
+    // Force a reflow so the animation actually restarts when re-applied.
+    void caretEl.offsetWidth;
+    caretEl.style.animation = '';
   }
 
   /* ---------- Input handling ---------- */
