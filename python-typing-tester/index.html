@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Python Typing Tester</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+<header>Python Typing Tester</header>
+
+<main>
+  <div id="config-bar">
+    <div class="seg" id="mode-seg">
+      <button data-mode="time" class="active">time</button>
+      <button data-mode="words">words</button>
+    </div>
+
+    <div class="seg" id="time-seg">
+      <button data-val="15">15</button>
+      <button data-val="30" class="active">30</button>
+      <button data-val="60">60</button>
+      <button data-val="120">120</button>
+    </div>
+
+    <div class="seg" id="words-seg" hidden>
+      <button data-val="10">10</button>
+      <button data-val="25" class="active">25</button>
+      <button data-val="50">50</button>
+      <button data-val="100">100</button>
+    </div>
+
+    <div class="custom-wrap">
+      <label for="custom-val">custom</label>
+      <input type="number" id="custom-val" min="1" step="1" placeholder="">
+    </div>
+
+    <div class="seg" id="difficulty-seg">
+      <button data-diff="easy">easy</button>
+      <button data-diff="normal" class="active">normal</button>
+      <button data-diff="hard">hard</button>
+    </div>
+
+    <button id="restart-btn" title="Restart (Tab+Enter)">restart</button>
+  </div>
+
+  <div id="stats-live">
+    <div class="stat"><span class="label">wpm</span><span class="value" id="live-wpm">0</span></div>
+    <div class="stat"><span class="label">acc</span><span class="value" id="live-acc">100%</span></div>
+    <div class="stat"><span class="label" id="live-timer-label">time</span><span class="value" id="live-timer">30</span></div>
+  </div>
+
+  <div id="test-area" tabindex="0">
+    <pre id="code-display" aria-label="Type this Python code"></pre>
+    <div id="caret"></div>
+    <div id="hint">click here or press any key to start</div>
+  </div>
+
+  <div id="results" hidden>
+    <div class="result-grid">
+      <div class="result-big">
+        <div class="label">wpm</div>
+        <div class="value" id="res-wpm">0</div>
+      </div>
+      <div class="result-big">
+        <div class="label">accuracy</div>
+        <div class="value" id="res-acc">0%</div>
+      </div>
+      <div class="result-row">
+        <div><span class="label">raw</span> <span id="res-raw">0</span></div>
+        <div><span class="label">chars</span> <span id="res-chars">0/0/0/0</span></div>
+        <div><span class="label">time</span> <span id="res-time">0s</span></div>
+        <div><span class="label">mode</span> <span id="res-mode">time 30</span></div>
+      </div>
+    </div>
+  </div>
+
+  <section id="history-section">
+    <div class="hist-head">
+      <h3>progress over time</h3>
+      <div class="hist-controls">
+        <span id="hist-count">0 runs saved</span>
+        <button id="clear-history" title="Clear all saved results">clear</button>
+      </div>
+    </div>
+    <canvas id="progress-chart" width="900" height="220"></canvas>
+    <div id="history-list"></div>
+  </section>
+
+  <footer>
+    <span>type python &middot; press Tab+Enter to restart &middot; results saved locally</span>
+  </footer>
+</main>
+
+<script src="./grammar.js"></script>
+<script src="./main.js"></script>
+</body>
+</html>
