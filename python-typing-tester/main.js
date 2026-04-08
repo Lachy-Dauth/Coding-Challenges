@@ -354,7 +354,10 @@
     resRaw.textContent = Math.round(rawWpm);
     resChars.textContent = state.correctChars + '/' + state.incorrectChars;
     resTime.textContent = elapsed.toFixed(1) + 's';
-    resMode.textContent = state.mode + ' ' + state.target + ' · ' + state.difficulty;
+    const modeLabel = state.mode === 'time'
+      ? state.target + 's'
+      : state.target + ' words';
+    resMode.textContent = modeLabel + ' · ' + state.difficulty;
     resultsEl.hidden = false;
 
     saveResult({

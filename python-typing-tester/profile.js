@@ -194,10 +194,13 @@
       const date =
         d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' +
         d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+      const modeLabel = r.mode === 'time'
+        ? r.target + 's'
+        : r.target + ' words';
       row.innerHTML =
         '<span class="run-wpm">'  + r.wpm.toFixed(0) + ' wpm</span>' +
         '<span class="run-acc">'  + (r.accuracy * 100).toFixed(1) + '%</span>' +
-        '<span class="run-mode">' + r.mode + ' ' + r.target + '</span>' +
+        '<span class="run-mode">' + modeLabel + '</span>' +
         '<span class="run-diff">' + (r.difficulty || 'normal') + '</span>' +
         '<span class="run-date">' + date + '</span>' +
         '<button class="run-del" data-id="' + r.date + '" title="Delete this run">\u00d7</button>';
@@ -216,6 +219,19 @@
     const targets = Array.from(new Set(relevant.map((r) => r.target)))
       .sort((a, b) => a - b);
 
+    // Relabel the filter group so the unit makes sense in context.
+    // "Target" was ambiguous — it means seconds in time mode and words
+    // in words mode, so we match whatever mode the user is viewing.
+    const labelEl = $('target-filter-label');
+    const mode = state.filters.mode;
+    if (labelEl) {
+      labelEl.textContent =
+        mode === 'time'  ? 'Seconds' :
+        mode === 'words' ? 'Words'   :
+        'Length';
+    }
+    const unit = mode === 'time' ? 's' : mode === 'words' ? 'w' : '';
+
     const container = $('target-filter');
     const prevActive = state.filters.target;
     container.innerHTML = '';
@@ -228,7 +244,7 @@
     targets.forEach((t) => {
       const b = document.createElement('button');
       b.dataset.val = String(t);
-      b.textContent = String(t);
+      b.textContent = unit ? String(t) + unit : String(t);
       container.appendChild(b);
     });
 
