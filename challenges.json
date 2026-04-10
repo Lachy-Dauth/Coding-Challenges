@@ -7,7 +7,7 @@
     "chips": ["COMP4141", "finite automata", "pushdown automata", "Turing machines", "formal languages"],
     "href": "./automata-studio/index.html",
     "featured": true,
-    "directlyFeatured": true
+    "directlyFeatured": false
   },
   {
     "title": "Turing Machine Simulator",
